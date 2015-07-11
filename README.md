@@ -1,5 +1,5 @@
 # rpython-interpreter
-**Learning to build a language interpreter with RPython and Rply**
+**Learning to build a language interpreter with RPython and RPly**
 
 I don't really know what I'm doing but I'm interested in writing a toy language and interpreter. 
 I've chosen RPython and RPly because I know Python quite well and the RPython EBNF parsing libs were confusing. 
