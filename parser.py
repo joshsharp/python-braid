@@ -23,7 +23,14 @@ class Float(BaseBox):
 
     def eval(self):
         return self.value
-    
+
+class String(BaseBox):
+    def __init__(self, value):
+        self.value = value
+
+    def eval(self):
+        return self.value
+
 class Variable(BaseBox):
     def __init__(self, value):
         self.value = value
@@ -61,7 +68,8 @@ class Variable(BaseBox):
 
 pg = ParserGenerator(
     # A list of all token names, accepted by the parser.
-    ['PRINT', 'INTEGER', 'FLOAT', 'VARIABLE', 'OPEN_PARENS', 'CLOSE_PARENS',
+    ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'VARIABLE',
+     'OPEN_PARENS', 'CLOSE_PARENS',
      'PLUS', 'MINUS', 'MUL', 'DIV', 'EQUALS', 
     ],
     # A list of precedence rules with ascending precedence, to
@@ -101,6 +109,10 @@ def expression_float(state, p):
 @pg.production('const : INTEGER')
 def expression_integer(state, p):
     return Integer(int(p[0].getstr()))
+
+@pg.production('const : STRING')
+def expression_string(state, p):
+    return String(p[0].getstr().strip('"\''))
 
 @pg.production('expression : const')
 def expression_const(state, p):

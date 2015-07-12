@@ -5,6 +5,7 @@ lg = LexerGenerator()
 # build up a set of token names and regexes they match
 lg.add('FLOAT', '-?\d+\.\d+')
 lg.add('INTEGER', '-?\d+')
+lg.add('STRING', '(""".*?""")|(".*?")|(\'.*?\')')
 lg.add('PRINT', 'print') # put this before variable which would otherwise match
 lg.add('VARIABLE', "[a-zA-Z_][a-zA-Z0-9_]*")
 lg.add('PLUS', '\+')
