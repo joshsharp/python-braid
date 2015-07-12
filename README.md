@@ -15,7 +15,20 @@ RPly's interface is a bit higher level.
 
 ## Status
 
-Basic arithmetic, variable assignment, and a print() function.
+Basic arithmetic, floats, integers, and strings, variable assignment, and a print() function.
+
+The result of the last statement is stored in `it`, so you can do: 
+
+```
+>>> 5 + 5
+= 10
+>>> a = it
+= 10
+print(a)
+= 10
+```
+
+Other stuff:
 
 ```
 >>> 5 + 5
@@ -26,8 +39,22 @@ Basic arithmetic, variable assignment, and a print() function.
 5
 >>> print(a + 25)
 30
+>>> "hi" + 'hi'
+= hihi
+>>> "hi" * 5 - 1
+= hihihihih
 ```
+
+## Compiling
+
+You will need pypy so you can use RPython's compiler. Then, like so:
+
+`python path/to/rpython/bin/rpython target.py`
+
+This will provide a `target-c` binary which you can use as a compiled substitute for `interpreter.py`.
 
 ## Goals
 
-A Turing-complete language with lexer, parser, bytecode compiler, VM, and JIT. A VM that compiles to a binary (thanks to RPython) which can run scripts interactively via REPL or passed in by filename.
+A Turing-complete language with lexer, parser, bytecode compiler, VM, and JIT. 
+A VM that compiles to a binary (thanks to RPython) which can run scripts interactively via REPL or passed in by filename.
+
