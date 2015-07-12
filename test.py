@@ -1,3 +1,4 @@
+#from __future__ import unicode_literals
 import unittest
 import parser
 import sys
@@ -50,6 +51,26 @@ class ArithmeticTest(unittest.TestCase):
         self.assertEqual(result, -15.0)
 
 
+class StringTest(unittest.TestCase):
+    
+    def test_value(self):
+        result = parser.parse('"a"').eval()
+        self.assertEqual(result, "a")
+
+        result = parser.parse("'a'").eval()
+        self.assertEqual(result, "a")
+        
+        result = parser.parse('"""a b"""').eval()
+        self.assertEqual(result, "a b")
+        
+        result = parser.parse('"""a "b" c"""').eval()
+        self.assertEqual(result, 'a "b" c')
+
+    def test_concat(self):
+        result = parser.parse('"hi" + "yo"').eval()
+        self.assertEqual(result, "hiyo")
+        
+
 class VariableTest(unittest.TestCase):
     
     def assignment(self):
@@ -63,6 +84,12 @@ class VariableTest(unittest.TestCase):
         self.assertEqual(result, 0)
         result = parser.parse('a').eval()
         self.assertEqual(result, 0)
+   
+    def assignment_string(self):
+        result = parser.parse('a = "hey"').eval()
+        self.assertEqual(result, 0)
+        result = parser.parse('a').eval()
+        self.assertEqual(result, "hey")
         
     def multiples(self):
         result = parser.parse('a = 50').eval()
