@@ -146,7 +146,7 @@ def error_handler(state, token):
 
 parser = pg.build()
 state = ParserState()
-state.variables['version'] = '0.0.0' # special value under 'version'
+state.variables['__version__'] = '0.0.0' # special value under '__version__'
 
 def parse(code):
     return parser.parse(lexer.lex(code),state)
