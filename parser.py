@@ -2,10 +2,14 @@ from rply import ParserGenerator
 from rply.token import BaseBox
 import lexer
 
+# state instance which gets passed to parser
 class ParserState(object):
     def __init__(self):
+        # we want to hold a dict of declared variables
         self.variables = {}
-    
+
+# all token types inherit rply's basebox as rpython needs this
+# these classes represent our Abstract Syntax Tree
 class Integer(BaseBox):
     def __init__(self, value):
         self.value = value
@@ -68,7 +72,7 @@ pg = ParserGenerator(
     ]
 )
 
-
+# this decorator defines the grammar to be matched and passed in as 'p'
 @pg.production('statement : PRINT OPEN_PARENS expression CLOSE_PARENS')
 def statement_print(state, p):
     print p[2].eval()
@@ -76,10 +80,12 @@ def statement_print(state, p):
 
 @pg.production('statement : VARIABLE EQUALS expression')
 def statement_assignment(state, p):
-    if not state.variables.get(p[0].getstr()):
+    # only assign value if variable is not yet defined - immutable values
+    if state.variables.get(p[0].getstr(), None) is None:
         state.variables[p[0].getstr()] = p[2].eval()
         return p[2]
     
+    # otherwise raise error
     raise ValueError("Cannot modify value of %s" % p[0].getstr())
     
 
@@ -89,14 +95,11 @@ def statement_expr(state, p):
 
 @pg.production('const : FLOAT')
 def expression_float(state, p):
-    # p is a list of the pieces matched by the right hand side of the
-    # rule
+    # p is a list of the pieces matched by the right hand side of the rule
     return Float(float(p[0].getstr()))
 
 @pg.production('const : INTEGER')
 def expression_integer(state, p):
-    # p is a list of the pieces matched by the right hand side of the
-    # rule
     return Integer(int(p[0].getstr()))
 
 @pg.production('expression : const')
@@ -105,12 +108,16 @@ def expression_const(state, p):
 
 @pg.production('expression : VARIABLE')
 def expression_variable(state, p):
+    # cannot return the value of a variable if it isn't yet defined
     if state.variables.get(p[0].getstr(), None) is None:
         raise ValueError("%s is not yet defined" % (p[0].getstr()))
+    # otherwise return value from state
     return Variable(state.variables[p[0].getstr()])
 
 @pg.production('expression : OPEN_PARENS expression CLOSE_PARENS')
 def expression_parens(state, p):
+    # in this case we need parens only for precedence
+    # so we just need to return the inner expression
     return p[1]
 
 @pg.production('expression : expression PLUS expression')
@@ -133,12 +140,13 @@ def expression_binop(state, p):
 
 @pg.error
 def error_handler(state, token):
+    # we print our state for debugging porpoises
     print state.variables
     raise ValueError("Unexpected %s at %s" % (token.gettokentype(), token.getsourcepos()))
 
 parser = pg.build()
 state = ParserState()
-state.variables['version'] = '0.0.0'
+state.variables['version'] = '0.0.0' # special value under 'version'
 
 def parse(code):
     return parser.parse(lexer.lex(code),state)
