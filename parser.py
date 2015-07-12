@@ -146,7 +146,16 @@ class Variable(BaseBox):
     
     def add(self, right):
         return self.value.eval().add(right)
-        
+    
+    def sub(self, right):
+        return self.value.eval().sub(right)
+    
+    def mul(self, right):
+        return self.value.eval().mul(right)
+    
+    def div(self, right):
+        return self.value.eval().div(right)
+
 
 class BinaryOp(BaseBox):
     def __init__(self, left, right):
@@ -160,7 +169,7 @@ class BinaryOp(BaseBox):
 class Add(BinaryOp):
     def eval(self):
         # this needs to call 'add' or something on the left, passing in the right
-        # cannot check that types are 'primitives' eg. Float
+        # cannot check that types are 'primitives' eg. Float like we were doing
         # because compound expression like 5 + 5 + 5 will end up with
         # Add(Float,Add(Float)) tree.
         
