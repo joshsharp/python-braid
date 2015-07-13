@@ -12,6 +12,10 @@ class Boolean(BaseBox):
     def equals(self, right):
         if type(right) is Boolean:
             return Boolean(self.value == right.value)
+        if type(right) is Integer:
+            return Boolean(self.to_int() == right.value)
+        if type(right) is Float:
+            return Boolean(self.to_int() == right.value)
         else:
             return Boolean(False)
         raise ValueError("Cannot compare that to boolean")
@@ -29,8 +33,14 @@ class Boolean(BaseBox):
         raise ValueError("Cannot div that from boolean")
     
     def to_string(self):
-        return str(self.value).lower()
+        if self.value:
+            return "true"
+        return "false"
 
+    def to_int(self):
+        if self.value:
+            return 1
+        return 0
 
 class Integer(BaseBox):
     def __init__(self, value):
@@ -47,6 +57,8 @@ class Integer(BaseBox):
             return Boolean(self.value == right.value)
         if type(right) is Integer:
             return Boolean(self.value == right.value)
+        if type(right) is Boolean:
+            return Boolean(self.value == right.to_int())
         raise ValueError("Cannot compare that to integer")
     
     def add(self, right):
@@ -94,6 +106,8 @@ class Float(BaseBox):
             return Boolean(self.value == right.value)
         if type(right) is Integer:
             return Boolean(self.value == right.value)
+        if type(right) is Boolean:
+            return Boolean(self.value == right.to_int())
         raise ValueError("Cannot compare that to float")
     
     def add(self, right):
@@ -138,6 +152,9 @@ class String(BaseBox):
     def equals(self, right):
         if type(right) is String:
             return Boolean(self.value == right.value)
+        if type(right) is Boolean:
+            length = int(len(self.value) != 0)
+            return Boolean(length == right.to_int())
         raise ValueError("Cannot compare that to string")
     
     def add(self, right):
