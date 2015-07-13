@@ -20,55 +20,56 @@ class ArithmeticTest(unittest.TestCase):
     
     def test_addition(self):        
         result = parser.parse('5 + 5').eval()
-        self.assertEqual(result, 10)
+        self.assertEqual(type(result),parser.Integer)
+        self.assertEqual(result.to_string(), '10')
 
     def test_negatives(self):        
         result = parser.parse('5 + -15').eval()
-        self.assertEqual(result, -10)
+        self.assertEqual(result.to_string(), '-10')
 
     def test_subtraction(self):
         result = parser.parse('5 - 10').eval()
-        self.assertEqual(result, -5)
+        self.assertEqual(result.to_string(), '-5')
 
     def test_multiplication(self):
         result = parser.parse('5 * 3').eval()
-        self.assertEqual(result, 15)
+        self.assertEqual(result.to_string(), '15')
         
     def test_precedence(self):
         result = parser.parse('5 * 3 + 4').eval()
-        self.assertEqual(result, 19)
+        self.assertEqual(result.to_string(), '19')
         result = parser.parse('5 + 3 * 4').eval()
-        self.assertEqual(result, 17)
+        self.assertEqual(result.to_string(), '17')
         result = parser.parse('5 * (3 + 4)').eval()
-        self.assertEqual(result, 35)
+        self.assertEqual(result.to_string(), '35')
 
     def test_floats(self):
         result = parser.parse('5 * 3.0').eval()
-        self.assertEqual(result, 15.0)
+        self.assertEqual(result.to_string(), '15.0')
 
     def test_floats2(self):
         result = parser.parse('5.0 * -3.0').eval()
-        self.assertEqual(result, -15.0)
+        self.assertEqual(result.to_string(), '-15.0')
 
 
 class StringTest(unittest.TestCase):
     
     def test_value(self):
         result = parser.parse('"a"').eval()
-        self.assertEqual(result, "a")
+        self.assertEqual(result.to_string(), "a")
 
         result = parser.parse("'a'").eval()
-        self.assertEqual(result, "a")
+        self.assertEqual(result.to_string(), "a")
         
         result = parser.parse('"""a b"""').eval()
-        self.assertEqual(result, "a b")
+        self.assertEqual(result.to_string(), "a b")
         
         result = parser.parse('"""a "b" c"""').eval()
-        self.assertEqual(result, 'a "b" c')
+        self.assertEqual(result.to_string(), 'a "b" c')
 
     def test_concat(self):
         result = parser.parse('"hi" + "yo"').eval()
-        self.assertEqual(result, "hiyo")
+        self.assertEqual(result.to_string(), "hiyo")
         
 
 class VariableTest(unittest.TestCase):
