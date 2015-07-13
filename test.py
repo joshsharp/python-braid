@@ -77,6 +77,31 @@ class StringTest(unittest.TestCase):
         self.assertEqual(result.to_string(), "hiyo")
         
 
+class BooleanTest(unittest.TestCase):
+    
+    def test_values(self):
+        result = parser.parse('true').eval()
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('false').eval()
+        self.assertEqual(result.to_string(), 'false')
+        
+    def test_equality(self):
+        result = parser.parse('true == true').eval()
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('false == false').eval()
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('true == false').eval()
+        self.assertEqual(result.to_string(), 'false')
+
+    def test_inequality(self):
+        result = parser.parse('true != true').eval()
+        self.assertEqual(result.to_string(), 'false')
+        result = parser.parse('false != false').eval()
+        self.assertEqual(result.to_string(), 'false')
+        result = parser.parse('true != false').eval()
+        self.assertEqual(result.to_string(), 'true')
+
+
 class VariableTest(unittest.TestCase):
     
     def test_assignment(self):
@@ -97,6 +122,12 @@ class VariableTest(unittest.TestCase):
         self.assertEqual(result.to_string(), 'hey')
         result = parser.parse('l').eval()
         self.assertEqual(result.to_string(), "hey")
+        
+    def test_assignment_bool(self):
+        result = parser.parse('o = true').eval()
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('o == true').eval()
+        self.assertEqual(result.to_string(), "true")
         
     def test_multiples(self):
         result = parser.parse('m = 50').eval()

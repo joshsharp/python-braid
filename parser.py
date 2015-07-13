@@ -1,6 +1,7 @@
 #from __future__ import unicode_literals
 from rply import ParserGenerator
 from rply.token import BaseBox
+from ast import *
 import lexer
 import os
 
@@ -10,196 +11,19 @@ class ParserState(object):
         # we want to hold a dict of declared variables
         self.variables = {}
 
-# all token types inherit rply's basebox as rpython needs this
-# these classes represent our Abstract Syntax Tree
-class Integer(BaseBox):
-    def __init__(self, value):
-        self.value = int(value)
-
-    def eval(self):
-        return self
-    
-    def to_string(self):
-        return str(self.value)
-    
-    def add(self, right):
-    
-        if type(right) is Integer:
-            return Integer(self.value + right.value)
-        if type(right) is Float:
-            return Float(self.value + right.value)
-        raise ValueError("Cannot add that to integer")
-    
-    def sub(self, right):
-        if type(right) is Integer:
-            return Integer(self.value - right.value)
-        if type(right) is Float:
-            return Float(self.value - right.value)
-        raise ValueError("Cannot sub from int")
-    
-    def mul(self, right):
-        if type(right) is Integer:
-            return Integer(self.value * right.value)
-        if type(right) is Float:
-            return Float(self.value * right.value)
-        raise ValueError("Cannot mul that to int")
-    
-    def div(self, right):
-        if type(right) is Integer:
-            return Integer(self.value / right.value)
-        if type(right) is Float:
-            return Float(self.value / right.value)
-        raise ValueError("Cannot div that with int")
-
-class Float(BaseBox):
-    def __init__(self, value):
-        self.value = float(value)
-
-    def eval(self):
-        return self
-
-    def to_string(self):
-        return str(self.value)
-
-    def add(self, right):
-    
-        if type(right) is Integer:
-            return Float(self.value + right.value)
-        if type(right) is Float:
-            return Float(self.value + right.value)
-        raise ValueError("Cannot add that to float")
-    
-    def sub(self, right):
-        if type(right) is Float:
-            return Float(self.value - right.value)
-        if type(right) is Integer:
-            return Float(self.value - right.value)
-        raise ValueError("Cannot sub string")
-    
-    def mul(self, right):
-        if type(right) is Integer:
-            return Float(self.value * right.value)
-        if type(right) is Float:
-            return Float(self.value * right.value)
-        raise ValueError("Cannot mul that to float")
-    
-    def div(self, right):
-        if type(right) is Integer:
-            return Float(self.value / right.value)
-        if type(right) is Float:
-            return Float(self.value / right.value)
-        raise ValueError("Cannot div that with float")
-
-class String(BaseBox):
-    def __init__(self, value):
-        self.value = str(value)
-
-    def eval(self):
-        return self
-
-    def to_string(self):
-        return str(self.value)
-
-    def add(self, right):
-    
-        if type(right) is Integer:
-            return String(self.value + str(right.value))
-        if type(right) is Float:
-            return String(self.value + str(right.value))
-        if type(right) is String:
-            return String(self.value + right.value)
-        raise ValueError("Cannot add that to string")
-    
-    def sub(self, right):
-        if type(right) is Integer:
-            
-            sli = len(self.value) - right.value
-            assert(sli >= 0)
-            return String(self.value[:sli])
-        if type(right) is Float:
-            
-            sli = len(self.value) - int(right.value)
-            assert(sli >= 0)
-            return String(self.value[:sli])
-        raise ValueError("Cannot sub string")
-    
-    def mul(self, right):
-        if type(right) is Integer:
-            return String(self.value * right.value)
-        if type(right) is Float:
-            return String(self.value * int(right.value))
-        raise ValueError("Cannot multiply string with that")
-    
-    def div(self, right):
-        raise ValueError("Cannot divide a string")
-    
-    
-class Variable(BaseBox):
-    def __init__(self, value):
-        self.value = value
-
-    def eval(self):
-        return self.value.eval()
-    
-    def to_string(self):
-        return str(self.value.eval())
-    
-    def add(self, right):
-        return self.value.eval().add(right)
-    
-    def sub(self, right):
-        return self.value.eval().sub(right)
-    
-    def mul(self, right):
-        return self.value.eval().mul(right)
-    
-    def div(self, right):
-        return self.value.eval().div(right)
-
-
-class BinaryOp(BaseBox):
-    def __init__(self, left, right):
-        self.left = left
-        self.right = right
-    
-    def to_string(self):
-        return str(self.eval())
-
-
-class Add(BinaryOp):
-    def eval(self):
-        # this needs to call 'add' or something on the left, passing in the right
-        # cannot check that types are 'primitives' eg. Float like we were doing
-        # because compound expression like 5 + 5 + 5 will end up with
-        # Add(Float,Add(Float)) tree.
-        
-        return self.left.eval().add(self.right.eval())
-        
-class Sub(BinaryOp):
-    def eval(self):
-        return self.left.eval().sub(self.right.eval())
-        
-        
-class Mul(BinaryOp):
-    def eval(self):
-        return self.left.eval().mul(self.right.eval())
-        
-class Div(BinaryOp):
-    def eval(self):
-        return self.left.eval().div(self.right.eval())
-
-
 pg = ParserGenerator(
     # A list of all token names, accepted by the parser.
-    ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'VARIABLE',
-     'OPEN_PARENS', 'CLOSE_PARENS',
-     'PLUS', 'MINUS', 'MUL', 'DIV', 'EQUALS', 
+    ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'VARIABLE', 'BOOLEAN',
+     'OPEN_PARENS', 'CLOSE_PARENS','PLUS', 'MINUS', 'MUL', 'DIV',
+     '=', '==', '!=',
     ],
     # A list of precedence rules with ascending precedence, to
     # disambiguate ambiguous production rules.
     precedence=[
+        ('left', ['==','!=']),
         ('left', ['PLUS', 'MINUS']),
-        ('left', ['MUL', 'DIV'])
+        ('left', ['MUL', 'DIV']),
+        
     ]
 )
 
@@ -211,7 +35,7 @@ def statement_print(state, p):
     printresult(p[2],'')
     return p[2]
 
-@pg.production('statement : VARIABLE EQUALS expression')
+@pg.production('statement : VARIABLE = expression')
 def statement_assignment(state, p):
     # only assign value if variable is not yet defined - immutable values
     if state.variables.get(p[0].getstr(), None) is None:
@@ -230,6 +54,11 @@ def statement_expr(state, p):
 def expression_float(state, p):
     # p is a list of the pieces matched by the right hand side of the rule
     return Float(float(p[0].getstr()))
+
+@pg.production('const : BOOLEAN')
+def expression_boolean(state, p):
+    # p is a list of the pieces matched by the right hand side of the rule
+    return Boolean(True if p[0].getstr() == 'true' else False)
 
 @pg.production('const : INTEGER')
 def expression_integer(state, p):
@@ -276,6 +105,19 @@ def expression_binop(state, p):
     else:
         raise AssertionError('Oops, this should not be possible!')
 
+@pg.production('expression : expression != expression')
+@pg.production('expression : expression == expression')
+def expression_equality(state, p):
+    left = p[0]
+    right = p[2]
+    check = p[1]
+    
+    if p[1].gettokentype() == '==':
+        return Equal(left, right)
+    elif p[1].gettokentype() == '!=':
+        return NotEqual(left, right)
+    else:
+        raise AssertionError("Shouldn't be possible")
 @pg.error
 def error_handler(state, token):
     # we print our state for debugging porpoises
@@ -290,5 +132,5 @@ def parse(code):
     return parser.parse(lexer.lex(code),state)
 
 def printresult(result, prefix):
-    
+    #print type(result)
     print prefix + result.eval().to_string()
