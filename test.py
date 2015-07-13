@@ -18,6 +18,11 @@ def captured_output():
 
 class ArithmeticTest(unittest.TestCase):
     
+    def test_primitives(self):
+        result = parser.parse('5').eval()
+        self.assertEqual(type(result),parser.Integer)
+        self.assertEqual(result.to_string(), '5')
+        
     def test_addition(self):        
         result = parser.parse('5 + 5').eval()
         self.assertEqual(type(result),parser.Integer)
@@ -74,31 +79,32 @@ class StringTest(unittest.TestCase):
 
 class VariableTest(unittest.TestCase):
     
-    def assignment(self):
-        result = parser.parse('a = 50').eval()
-        self.assertEqual(result, 50)
-        result = parser.parse('a').eval()
-        self.assertEqual(result, 50)
+    def test_assignment(self):
+        result = parser.parse('j = 50').eval()
+        self.assertEqual(result.to_string(), '50')
+        result = parser.parse('j').eval()
+        self.assertEqual(type(result), parser.Integer)
+        self.assertEqual(result.to_string(), '50')
     
-    def assignment_zero(self):
-        result = parser.parse('a = 0').eval()
-        self.assertEqual(result, 0)
-        result = parser.parse('a').eval()
-        self.assertEqual(result, 0)
+    def test_assignment_zero(self):
+        result = parser.parse('k = 0').eval()
+        self.assertEqual(result.to_string(), '0')
+        result = parser.parse('k').eval()
+        self.assertEqual(result.to_string(), '0')
    
-    def assignment_string(self):
-        result = parser.parse('a = "hey"').eval()
-        self.assertEqual(result, 0)
-        result = parser.parse('a').eval()
-        self.assertEqual(result, "hey")
+    def test_assignment_string(self):
+        result = parser.parse('l = "hey"').eval()
+        self.assertEqual(result.to_string(), 'hey')
+        result = parser.parse('l').eval()
+        self.assertEqual(result.to_string(), "hey")
         
-    def multiples(self):
-        result = parser.parse('a = 50').eval()
-        self.assertEqual(result, 50)
-        result = parser.parse('b = a + 5').eval()
-        self.assertEqual(result, 55)
-        result = parser.parse('b').eval()
-        self.assertEqual(result, 55)
+    def test_multiples(self):
+        result = parser.parse('m = 50').eval()
+        self.assertEqual(result.to_string(), '50')
+        result = parser.parse('n = m + 5').eval()
+        self.assertEqual(result.to_string(), '55')
+        result = parser.parse('n').eval()
+        self.assertEqual(result.to_string(), '55')
 
 
 class PrintTest(unittest.TestCase):
