@@ -142,7 +142,7 @@ class Variable(BaseBox):
         return self.value.eval()
     
     def to_string(self):
-        return str(self.value)
+        return str(self.value.eval())
     
     def add(self, right):
         return self.value.eval().add(right)
