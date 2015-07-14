@@ -16,22 +16,26 @@ def readline(prompt=None):
 
    
 def loop():
+    state = parser.state
     try:
         while True:
             # loop forever until KeyboardInterrupt or other break
             
             code = readline('>>> ') #.decode(sys.stdin.encoding or locale.getpreferredencoding(True) or 'ascii')
+            if code.strip() == '':
+                continue
             try:
-                result = parser.parse(code)
+                result = parser.parse(code, state)
                 parser.state.variables['it'] = result
                 parser.printresult(result,"= ")
             except ValueError as e:
-                print "ERROR: " + str(e)
+                os.write(2, "ERROR: " + str(e) + "\n")
                 continue
 
     except KeyboardInterrupt:
-        pass
+        os.write(1, "\n")
+        exit()
 
 if __name__ == '__main__':
-
+    os.write(1, "Interpreter v%s\n" % parser.state.variables['VERSION'].to_string())
     loop()

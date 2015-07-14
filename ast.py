@@ -2,6 +2,31 @@ from rply.token import BaseBox
 
 # all token types inherit rply's basebox as rpython needs this
 # these classes represent our Abstract Syntax Tree
+class Program(BaseBox):
+    
+    def __init__(self, statement):
+        self.statements = []
+        self.statements.append(statement)
+    
+    def add_statement(self, statement):
+        self.statements.insert(0,statement)
+        
+    def eval(self):
+        #print "count: %s" % len(self.statements)
+        result = None
+        for statement in self.statements:
+            result = statement.eval()
+            #print result.to_string()
+        return result        
+
+class Noop(BaseBox):
+    
+    def eval(self):
+        return self
+    
+    def to_string(self):
+        return '(noop)'
+
 class Boolean(BaseBox):
     def __init__(self, value):
         self.value = bool(value)
@@ -139,6 +164,7 @@ class Float(BaseBox):
             return Float(self.value / right.value)
         raise ValueError("Cannot div that with float")
 
+
 class String(BaseBox):
     def __init__(self, value):
         self.value = str(value)
@@ -216,6 +242,35 @@ class Variable(BaseBox):
     def div(self, right):
         return self.value.eval().div(right)
 
+
+class Print(BaseBox):
+    def __init__(self, value):
+        self.value = value
+    
+    def eval(self):
+        print self.value.eval().to_string() + '\n'
+        return self.value.eval() 
+    
+    def to_string(self):
+        return self.value.eval().to_string()
+
+
+class If(BaseBox):
+    def __init__(self, condition, body, else_body=None):
+        self.condition = condition
+        self.body = body
+        self.else_body = else_body
+        
+    def eval(self):
+        condition = self.condition.eval()
+        if Boolean(True).equals(condition).value:
+            
+            return self.body.eval()
+        else:
+            
+            if self.else_body is not None:
+                return self.else_body.eval()
+        return Noop()
 
 class BinaryOp(BaseBox):
     def __init__(self, left, right):

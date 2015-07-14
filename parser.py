@@ -1,6 +1,6 @@
 #from __future__ import unicode_literals
 from rply import ParserGenerator
-from rply.token import BaseBox
+from rply.token import BaseBox, Token
 from ast import *
 import lexer
 import os
@@ -15,11 +15,13 @@ pg = ParserGenerator(
     # A list of all token names, accepted by the parser.
     ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'VARIABLE', 'BOOLEAN',
      'OPEN_PARENS', 'CLOSE_PARENS','PLUS', 'MINUS', 'MUL', 'DIV',
-     '=', '==', '!=',
+     '=', '==', '!=', '$end', 'NEWLINE', 'IF', 'ELSE', 'COLON', 'END',
     ],
     # A list of precedence rules with ascending precedence, to
     # disambiguate ambiguous production rules.
     precedence=[
+        ('left', ['=']),
+        ('left', ['IF']),
         ('left', ['==','!=']),
         ('left', ['PLUS', 'MINUS']),
         ('left', ['MUL', 'DIV']),
@@ -27,28 +29,36 @@ pg = ParserGenerator(
     ]
 )
 
-# this decorator defines the grammar to be matched and passed in as 'p'
-@pg.production('statement : PRINT OPEN_PARENS expression CLOSE_PARENS')
-def statement_print(state, p):
+@pg.production("main : program")
+def main_program(self, p):
+    return p[0]
+
+@pg.production('program : statement')
+def program_statement(state, p):
+    return Program(p[0])
+
+@pg.production('program : statement NEWLINE program')
+def program_statement_program(state, p):
+    if type(p[2]) is Program:
+        program = p[2]
+    else:
+        program = Program(p[2])
     
-    #os.write(1, p[2].eval())
-    printresult(p[2],'')
+    program.add_statement(p[0])
     return p[2]
 
-@pg.production('statement : VARIABLE = expression')
-def statement_assignment(state, p):
-    # only assign value if variable is not yet defined - immutable values
-    if state.variables.get(p[0].getstr(), None) is None:
-        state.variables[p[0].getstr()] = p[2]
-        return p[2]
-    
-    # otherwise raise error
-    raise ValueError("Cannot modify value")
-    
+@pg.production('statement : $end')
+def statement_end(state, p):
+    return Noop()
 
 @pg.production('statement : expression')
 def statement_expr(state, p):
     return p[0]
+
+@pg.production('statement : PRINT OPEN_PARENS expression CLOSE_PARENS')
+def statement_print(state, p):    
+    #os.write(1, p[2].eval())
+    return Print(p[2])
 
 @pg.production('const : FLOAT')
 def expression_float(state, p):
@@ -71,6 +81,24 @@ def expression_string(state, p):
 @pg.production('expression : const')
 def expression_const(state, p):
     return p[0]
+
+@pg.production('expression : VARIABLE = expression')
+def statement_assignment(state, p):
+    # only assign value if variable is not yet defined - immutable values
+    if state.variables.get(p[0].getstr(), None) is None:
+        state.variables[p[0].getstr()] = p[2]
+        return p[2]
+    
+    # otherwise raise error
+    raise ValueError("Cannot modify value")
+
+@pg.production('expression : IF expression COLON program END')
+def expression_if(state, p):
+    return If(condition=p[1],body=p[3])
+
+@pg.production('expression : IF expression COLON program ELSE COLON program END')
+def expression_if_else(state, p):
+    return If(condition=p[1],body=p[3],else_body=p[6])
 
 @pg.production('expression : VARIABLE')
 def expression_variable(state, p):
@@ -118,17 +146,19 @@ def expression_equality(state, p):
         return NotEqual(left, right)
     else:
         raise AssertionError("Shouldn't be possible")
+
 @pg.error
 def error_handler(state, token):
     # we print our state for debugging porpoises
-    print token
-    raise ValueError("Unexpected %s at %s" % (token.gettokentype(), token.getsourcepos()))
+    #print token
+    pos = token.getsourcepos()
+    raise ValueError("Unexpected '%s' at line %003d, col %02d" % (token.gettokentype(), pos.lineno, pos.colno))
 
 parser = pg.build()
 state = ParserState()
-state.variables['__version__'] = String('0.0.0') # special value under '__version__'
+state.variables['VERSION'] = String('0.0.0') # special value under '__version__'
 
-def parse(code):
+def parse(code, state):
     return parser.parse(lexer.lex(code),state)
 
 def printresult(result, prefix):
