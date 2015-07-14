@@ -61,6 +61,12 @@ else:
   print("not this though")
 end
 ```
+```
+>>> a = if true: 5 end
+= 5
+>>> :a
+Program(BinaryOp(Variable('a'), If(Boolean(True))Then(Integer(5))Else(None)))
+```
 
 ## Compiling
 
