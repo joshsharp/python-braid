@@ -13,6 +13,8 @@ RPly's interface is a bit higher level.
 
 `python interpreter.py`
 
+`:a` gives you the AST of the last statement, `:e` to list environment variables, `:q` or Ctrl-C to quit.
+
 ## Status
 
 Basic arithmetic, floats, integers, booleans, and strings, variable assignment, if expressions, and a print() function.
