@@ -11,27 +11,63 @@ class Program(BaseBox):
     def add_statement(self, statement):
         self.statements.insert(0,statement)
         
-    def eval(self):
+    def eval(self, env):
         #print "count: %s" % len(self.statements)
         result = None
         for statement in self.statements:
-            result = statement.eval()
+            result = statement.eval(env)
             #print result.to_string()
-        return result        
+        return result
+    
+    def __repr__(self):
+        result = 'Program('
+        for statement in self.statements:
+            result += repr(statement)
+        result += ')'
+        return result
+
+
+class Block(BaseBox):
+    
+    def __init__(self, statement):
+        self.statements = []
+        self.statements.append(statement)
+    
+    def add_statement(self, statement):
+        self.statements.insert(0,statement)
+        
+    def eval(self, env):
+        #print "count: %s" % len(self.statements)
+        result = None
+        for statement in self.statements:
+            result = statement.eval(env)
+            #print result.to_string()
+        return result
+    
+    def __repr__(self):
+        result = 'Block('
+        for statement in self.statements:
+            result += repr(statement)
+        result += ')'
+        return result
+    
 
 class Noop(BaseBox):
     
-    def eval(self):
+    def eval(self, env):
         return self
     
     def to_string(self):
         return '(noop)'
 
+    def __repr__(self):
+        return 'Noop()'
+
 class Boolean(BaseBox):
     def __init__(self, value):
         self.value = bool(value)
 
-    def eval(self):
+    def eval(self, env):
         return self
     
     def equals(self, right):
@@ -66,12 +102,16 @@ class Boolean(BaseBox):
         if self.value:
             return 1
         return 0
+    
+    def __repr__(self):
+        return 'Boolean(%s)' % repr(self.value)
+
 
 class Integer(BaseBox):
     def __init__(self, value):
         self.value = int(value)
 
-    def eval(self):
+    def eval(self, env):
         return self
     
     def to_string(self):
@@ -115,12 +155,14 @@ class Integer(BaseBox):
             return Float(self.value / right.value)
         raise ValueError("Cannot div that with int")
 
+    def __repr__(self):
+        return 'Integer(%s)' % repr(self.value)
 
 class Float(BaseBox):
     def __init__(self, value):
         self.value = float(value)
 
-    def eval(self):
+    def eval(self, env):
         return self
 
     def to_string(self):
@@ -164,12 +206,14 @@ class Float(BaseBox):
             return Float(self.value / right.value)
         raise ValueError("Cannot div that with float")
 
+    def __repr__(self):
+        return 'Float(%s)' % repr(self.value)
 
 class String(BaseBox):
     def __init__(self, value):
         self.value = str(value)
 
-    def eval(self):
+    def eval(self, env):
         return self
 
     def to_string(self):
@@ -216,44 +260,56 @@ class String(BaseBox):
     def div(self, right):
         raise ValueError("Cannot divide a string")
     
+    def __repr__(self):
+        return 'String(%s)' % repr(self.value)
+        
     
 class Variable(BaseBox):
-    def __init__(self, value):
-        self.value = value
+    def __init__(self, name):
+        self.name = name
+        self.value = None
 
-    def eval(self):
-        return self.value.eval()
+    def eval(self, env):
+        if env.variables.get(self.name, None) is not None:
+            self.value = env.variables[self.name].eval(env)
+            return self.value
+        raise ValueError("Not yet defined")
     
     def to_string(self):
-        return str(self.value.eval())
+        return str(self.name)
     
     def equals(self, right):
-        return self.value.eval().equals(right)
+        return self.value.equals(right)
     
     def add(self, right):
-        return self.value.eval().add(right)
+        return self.value.add(right)
     
     def sub(self, right):
-        return self.value.eval().sub(right)
+        return self.value.sub(right)
     
     def mul(self, right):
-        return self.value.eval().mul(right)
+        return self.value.mul(right)
     
     def div(self, right):
-        return self.value.eval().div(right)
+        return self.value.div(right)
 
+    def __repr__(self):
+        return 'Variable(%s)' % repr(self.name)
+        
 
 class Print(BaseBox):
     def __init__(self, value):
         self.value = value
     
-    def eval(self):
-        print self.value.eval().to_string() + '\n'
-        return self.value.eval() 
+    def eval(self, env):
+        print self.value.eval(env).to_string()
+        return self.value.eval(env) 
     
     def to_string(self):
-        return self.value.eval().to_string()
+        return "Print"
 
+    def __repr__(self):
+        return "Print(%s)" % repr(self.value)
 
 class If(BaseBox):
     def __init__(self, condition, body, else_body=None):
@@ -261,16 +317,19 @@ class If(BaseBox):
         self.body = body
         self.else_body = else_body
         
-    def eval(self):
-        condition = self.condition.eval()
+    def eval(self, env):
+        condition = self.condition.eval(env)
         if Boolean(True).equals(condition).value:
             
-            return self.body.eval()
+            return self.body.eval(env)
         else:
             
             if self.else_body is not None:
-                return self.else_body.eval()
+                return self.else_body.eval(env)
         return Noop()
+
+    def __repr__(self):
+        return 'If(%s)Then(%s)Else(%s)' % (repr(self.condition), repr(self.body), repr(self.else_body))
 
 class BinaryOp(BaseBox):
     def __init__(self, left, right):
@@ -278,40 +337,53 @@ class BinaryOp(BaseBox):
         self.right = right
     
     def to_string(self):
-        return str(self.eval())
+        return 'BinaryOp'
+    
+    def __repr__(self):
+        return  'BinaryOp(%s, %s)' % (repr(self.left), repr(self.right))
 
 class Equal(BinaryOp):
     
-    def eval(self):
-        return self.left.eval().equals(self.right.eval())
-
+    def eval(self, env):
+        return self.left.eval(env).equals(self.right.eval(env))
 
 class NotEqual(BinaryOp):
     
-    def eval(self):
-        result = self.left.eval().equals(self.right.eval())
+    def eval(self, env):
+        result = self.left.eval(env).equals(self.right.eval(env))
         result.value = not result.value
         return result
 
 
 class Add(BinaryOp):
-    def eval(self):
+    
+    def eval(self, env):
         # this needs to call 'add' or something on the left, passing in the right
         # cannot check that types are 'primitives' eg. Float like we were doing
         # because compound expression like 5 + 5 + 5 will end up with
         # Add(Float,Add(Float)) tree.
         
-        return self.left.eval().add(self.right.eval())
+        return self.left.eval(env).add(self.right.eval(env))
         
 class Sub(BinaryOp):
-    def eval(self):
-        return self.left.eval().sub(self.right.eval())
+    def eval(self, env):
+        return self.left.eval(env).sub(self.right.eval(env))
         
         
 class Mul(BinaryOp):
-    def eval(self):
-        return self.left.eval().mul(self.right.eval())
+    def eval(self, env):
+        return self.left.eval(env).mul(self.right.eval(env))
         
 class Div(BinaryOp):
-    def eval(self):
-        return self.left.eval().div(self.right.eval())
+    def eval(self, env):
+        return self.left.eval(env).div(self.right.eval(env))
+
+class Assignment(BinaryOp):
+    
+    def eval(self, env):
+        if env.variables.get(self.left.name, None) is None:
+            env.variables[self.left.name] = self.right.eval(env)
+            return self.right.eval(env)
+        
+        # otherwise raise error
+        raise ValueError("Cannot modify value")

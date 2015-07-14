@@ -21,7 +21,7 @@ pg = ParserGenerator(
     # disambiguate ambiguous production rules.
     precedence=[
         ('left', ['=']),
-        ('left', ['IF']),
+        ('left', ['IF','COLON','ELSE','END','NEWLINE',]),
         ('left', ['==','!=']),
         ('left', ['PLUS', 'MINUS']),
         ('left', ['MUL', 'DIV']),
@@ -47,7 +47,23 @@ def program_statement_program(state, p):
     program.add_statement(p[0])
     return p[2]
 
-@pg.production('statement : $end')
+@pg.production('block : expression NEWLINE')
+def block_expr(state, p):
+    return Block(p[0])
+
+@pg.production('block : expression NEWLINE block')
+def block_expr_block(state, p):
+    if type(p[2]) is Block:
+        b = p[2]
+    else:
+        b = Block(p[2])
+    
+    b.add_statement(p[0])
+    return p[2]
+
+@pg.production('terminator : NEWLINE')
+@pg.production('terminator : $end')
+@pg.production('statement : terminator')
 def statement_end(state, p):
     return Noop()
 
@@ -55,7 +71,7 @@ def statement_end(state, p):
 def statement_expr(state, p):
     return p[0]
 
-@pg.production('statement : PRINT OPEN_PARENS expression CLOSE_PARENS')
+@pg.production('expression : PRINT OPEN_PARENS expression CLOSE_PARENS')
 def statement_print(state, p):    
     #os.write(1, p[2].eval())
     return Print(p[2])
@@ -84,29 +100,28 @@ def expression_const(state, p):
 
 @pg.production('expression : VARIABLE = expression')
 def statement_assignment(state, p):
-    # only assign value if variable is not yet defined - immutable values
-    if state.variables.get(p[0].getstr(), None) is None:
-        state.variables[p[0].getstr()] = p[2]
-        return p[2]
-    
-    # otherwise raise error
-    raise ValueError("Cannot modify value")
+    return Assignment(Variable(p[0].getstr()),p[2])
 
-@pg.production('expression : IF expression COLON program END')
-def expression_if(state, p):
+@pg.production('expression : IF expression COLON expression END')
+def expression_if_single_line(state, p):
     return If(condition=p[1],body=p[3])
 
-@pg.production('expression : IF expression COLON program ELSE COLON program END')
-def expression_if_else(state, p):
+@pg.production('expression : IF expression COLON expression ELSE COLON expression END')
+def expression_if_else_single_line(state, p):
     return If(condition=p[1],body=p[3],else_body=p[6])
+
+@pg.production('expression : IF expression COLON NEWLINE block END')
+def expression_if(state, p):
+    return If(condition=p[1],body=p[4])
+
+@pg.production('expression : IF expression COLON NEWLINE block ELSE COLON NEWLINE block END')
+def expression_if_else(state, p):
+    return If(condition=p[1],body=p[4],else_body=p[8])
 
 @pg.production('expression : VARIABLE')
 def expression_variable(state, p):
     # cannot return the value of a variable if it isn't yet defined
-    if state.variables.get(p[0].getstr(), None) is None:
-        raise ValueError("Not yet defined")
-    # otherwise return value from state
-    return state.variables[str(p[0].getstr())]
+    return Variable(p[0].getstr())
 
 @pg.production('expression : OPEN_PARENS expression CLOSE_PARENS')
 def expression_parens(state, p):
@@ -152,15 +167,18 @@ def error_handler(state, token):
     # we print our state for debugging porpoises
     #print token
     pos = token.getsourcepos()
-    raise ValueError("Unexpected '%s' at line %d, col %d" % (token.gettokentype(), pos.lineno, pos.colno))
+    if pos:
+        raise ValueError("Unexpected '%s' at line %d, col %d" % (token.gettokentype(), pos.lineno, pos.colno))
+    elif token.gettokentype() == '$end':
+        raise ValueError("Unexpected end of statement")
+    else:
+        raise ValueError("Unexpected '%s'" % (token.gettokentype()))
 
 parser = pg.build()
 state = ParserState()
-state.variables['VERSION'] = String('0.0.0') # special value under '__version__'
 
 def parse(code, state):
-    return parser.parse(lexer.lex(code),state)
+    
+    result = parser.parse(lexer.lex(code),state)
+    return result
 
-def printresult(result, prefix):
-    #print type(result)
-    print prefix + result.eval().to_string()
