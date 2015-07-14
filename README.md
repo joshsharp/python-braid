@@ -15,7 +15,7 @@ RPly's interface is a bit higher level.
 
 ## Status
 
-Basic arithmetic, floats, integers, booleans, and strings, variable assignment, and a print() function.
+Basic arithmetic, floats, integers, booleans, and strings, variable assignment, if expressions, and a print() function.
 
 The result of the last statement is stored in `it`, so you can do: 
 
@@ -45,6 +45,19 @@ Other stuff:
 = hihi
 >>> "hi" * 5 - 1
 = hihihihih
+>>> if false: print("no") else: print("yes") end
+yes
+>>> a = (if true: 1 else: 5 end)
+= 1
+```
+
+```
+a = 50
+if a == 50:
+  print("doing stuff")
+else:
+  print("not this though")
+end
 ```
 
 ## Compiling
