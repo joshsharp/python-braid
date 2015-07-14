@@ -152,7 +152,7 @@ def error_handler(state, token):
     # we print our state for debugging porpoises
     #print token
     pos = token.getsourcepos()
-    raise ValueError("Unexpected '%s' at line %003d, col %02d" % (token.gettokentype(), pos.lineno, pos.colno))
+    raise ValueError("Unexpected '%s' at line %d, col %d" % (token.gettokentype(), pos.lineno, pos.colno))
 
 parser = pg.build()
 state = ParserState()

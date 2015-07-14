@@ -34,7 +34,7 @@ def loop():
 
     except KeyboardInterrupt:
         os.write(1, "\n")
-        exit()
+
 
 if __name__ == '__main__':
     os.write(1, "Interpreter v%s\n" % parser.state.variables['VERSION'].to_string())
