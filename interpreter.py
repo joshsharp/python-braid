@@ -41,7 +41,8 @@ def loop():
             if code.strip() == '':
                 continue
             if code.strip() == ':a':
-                print repr(last)
+                if last is not None:
+                    print last.rep()
                 continue
             if code.strip() == ':e':
                 for key, var in env.variables.iteritems():
@@ -59,7 +60,8 @@ def loop():
                 
             except ValueError as e:
                 os.write(2, "ERROR: " + str(e) + "\n")
-                print repr(last)
+                if last is not None:
+                    print last.rep()
                 continue
 
             #except AttributeError as e:

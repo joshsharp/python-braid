@@ -19,10 +19,10 @@ class Program(BaseBox):
             #print result.to_string()
         return result
     
-    def __repr__(self):
+    def rep(self):
         result = 'Program('
         for statement in self.statements:
-            result += repr(statement)
+            result += statement.rep()
         result += ')'
         return result
 
@@ -44,10 +44,10 @@ class Block(BaseBox):
             #print result.to_string()
         return result
     
-    def __repr__(self):
+    def rep(self):
         result = 'Block('
         for statement in self.statements:
-            result += repr(statement)
+            result += statement.rep()
         result += ')'
         return result
     
@@ -60,7 +60,7 @@ class Noop(BaseBox):
     def to_string(self):
         return '(noop)'
 
-    def __repr__(self):
+    def rep(self):
         return 'Noop()'
 
 class Boolean(BaseBox):
@@ -103,8 +103,8 @@ class Boolean(BaseBox):
             return 1
         return 0
     
-    def __repr__(self):
-        return 'Boolean(%s)' % repr(self.value)
+    def rep(self):
+        return 'Boolean(%s)' % self.value
 
 
 class Integer(BaseBox):
@@ -155,8 +155,8 @@ class Integer(BaseBox):
             return Float(self.value / right.value)
         raise ValueError("Cannot div that with int")
 
-    def __repr__(self):
-        return 'Integer(%s)' % repr(self.value)
+    def rep(self):
+        return 'Integer(%s)' % self.value
 
 class Float(BaseBox):
     def __init__(self, value):
@@ -206,8 +206,8 @@ class Float(BaseBox):
             return Float(self.value / right.value)
         raise ValueError("Cannot div that with float")
 
-    def __repr__(self):
-        return 'Float(%s)' % repr(self.value)
+    def rep(self):
+        return 'Float(%s)' % self.value
 
 class String(BaseBox):
     def __init__(self, value):
@@ -260,14 +260,17 @@ class String(BaseBox):
     def div(self, right):
         raise ValueError("Cannot divide a string")
     
-    def __repr__(self):
-        return 'String(%s)' % repr(self.value)
+    def rep(self):
+        return 'String(%s)' % self.value
         
     
 class Variable(BaseBox):
     def __init__(self, name):
         self.name = name
         self.value = None
+
+    def getname(self):
+        return self.name
 
     def eval(self, env):
         if env.variables.get(self.name, None) is not None:
@@ -293,8 +296,8 @@ class Variable(BaseBox):
     def div(self, right):
         return self.value.div(right)
 
-    def __repr__(self):
-        return 'Variable(%s)' % repr(self.name)
+    def rep(self):
+        return 'Variable(%s)' % self.name
         
 
 class Print(BaseBox):
@@ -308,8 +311,8 @@ class Print(BaseBox):
     def to_string(self):
         return "Print"
 
-    def __repr__(self):
-        return "Print(%s)" % repr(self.value)
+    def rep(self):
+        return "Print(%s)" % self.value.rep()
 
 class If(BaseBox):
     def __init__(self, condition, body, else_body=None):
@@ -328,8 +331,8 @@ class If(BaseBox):
                 return self.else_body.eval(env)
         return Noop()
 
-    def __repr__(self):
-        return 'If(%s)Then(%s)Else(%s)' % (repr(self.condition), repr(self.body), repr(self.else_body))
+    def rep(self):
+        return 'If(%s) Then(%s) Else(%s)' % (self.condition.rep(), self.body.rep(), self.else_body.rep())
 
 class BinaryOp(BaseBox):
     def __init__(self, left, right):
@@ -339,15 +342,21 @@ class BinaryOp(BaseBox):
     def to_string(self):
         return 'BinaryOp'
     
-    def __repr__(self):
-        return  'BinaryOp(%s, %s)' % (repr(self.left), repr(self.right))
+    def rep(self):
+        return  'BinaryOp(%s, %s)' % (self.left.rep(), self.right.rep())
 
 class Equal(BinaryOp):
+    
+    def rep(self):
+        return 'Equal(%s, %s)' % (self.left.rep(), self.right.rep())
     
     def eval(self, env):
         return self.left.eval(env).equals(self.right.eval(env))
 
 class NotEqual(BinaryOp):
+    
+    def rep(self):
+        return 'NotEqual(%s, %s)' % (self.left.rep(), self.right.rep())
     
     def eval(self, env):
         result = self.left.eval(env).equals(self.right.eval(env))
@@ -356,6 +365,9 @@ class NotEqual(BinaryOp):
 
 
 class Add(BinaryOp):
+    
+    def rep(self):
+        return  'Add(%s, %s)' % (self.left.rep(), self.right.rep())
     
     def eval(self, env):
         # this needs to call 'add' or something on the left, passing in the right
@@ -366,24 +378,40 @@ class Add(BinaryOp):
         return self.left.eval(env).add(self.right.eval(env))
         
 class Sub(BinaryOp):
+    
+    def rep(self):
+        return  'Sub(%s, %s)' % (self.left.rep(), self.right.rep())
+    
     def eval(self, env):
         return self.left.eval(env).sub(self.right.eval(env))
         
         
 class Mul(BinaryOp):
+    
+    def rep(self):
+        return  'Mul(%s, %s)' % (self.left.rep(), self.right.rep())
+    
     def eval(self, env):
         return self.left.eval(env).mul(self.right.eval(env))
         
 class Div(BinaryOp):
+    def rep(self):
+        return  'Div(%s, %s)' % (self.left.rep(), self.right.rep())
+    
     def eval(self, env):
         return self.left.eval(env).div(self.right.eval(env))
 
 class Assignment(BinaryOp):
     
+    def rep(self):
+        return  'Assignment(%s, %s)' % (self.left.rep(), self.right.rep())
+    
     def eval(self, env):
-        if env.variables.get(self.left.name, None) is None:
-            env.variables[self.left.name] = self.right.eval(env)
-            return self.right.eval(env)
+        if isinstance(self.left,Variable):
         
+            if env.variables.get(self.left.getname(), None) is None:
+                env.variables[self.left.getname()] = self.right.eval(env)
+                return self.right.eval(env)
+                
         # otherwise raise error
         raise ValueError("Cannot modify value")
