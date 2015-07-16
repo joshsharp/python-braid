@@ -13,7 +13,7 @@ RPly's interface is a bit higher level.
 
 `python interpreter.py`
 
-`:a` gives you the AST of the last statement, `:e` to list environment variables, `:q` or Ctrl-C to quit.
+`:a` gives you the AST of the last statement, `:e` to list environment variables, `:q` or Ctrl-C to quit. The REPL now supports multi-line input too — it'll just keep appending code and trying to interpret it until it's valid (eg. you closed the block or whatever), or you break it ;)
 
 ## Status
 
@@ -60,12 +60,20 @@ if a == 50:
 else:
   print("not this though")
 end
+
+>>> 5 >= 6
+= false
 ```
 ```
 >>> a = if true: 5 end
 = 5
 >>> :a
 Program(BinaryOp(Variable('a'), If(Boolean(True))Then(Integer(5))Else(None)))
+```
+
+```
+>>> [5, 6, ["hi", 7.0]]
+= [5, 6, [hi, 7.0]]
 ```
 
 ## Compiling
