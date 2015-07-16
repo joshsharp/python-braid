@@ -89,3 +89,6 @@ This will provide a `target-c` binary which you can use as a compiled substitute
 A Turing-complete language with lexer, parser, bytecode compiler, VM, and JIT. 
 A VM that compiles to a binary (thanks to RPython) which can run scripts interactively via REPL or passed in by filename.
 
+## Status updates
+
+Obviously you can read the commits but I'm also documenting my progress [on Littlelogs](http://littlelogs.co/josh/), or more specifically [posts tagged with #interpreter](http://littlelogs.co/josh/tag/interpreter/)
