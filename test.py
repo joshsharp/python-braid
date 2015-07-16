@@ -119,6 +119,60 @@ class BooleanTest(unittest.TestCase):
         result = parser.parse('true != false',self.s).eval(self.e)
         self.assertEqual(result.to_string(), 'true')
 
+    def test_numbers(self):
+        result = parser.parse('5 == 5',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5 >= 5',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5 >= 4',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5 > 4',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5 > -4',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('-5 < -4',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('-5 < 4',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        
+        result = parser.parse('5.0 == 5.0',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5.0 >= 5.0',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5.0 >= 4.0',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5.0 > 4.0',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5.0 > -4.0',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('-5.0 < -4.0',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('-5.0 < 4.0',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        
+        result = parser.parse('5 == 5.0',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5.0 >= 5',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5 >= 4.0',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5.0 > 4',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5 > -4.0',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('-5.0 < -4',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('-5 < 4.0',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        
+    def test_strings(self):
+        result = parser.parse('"5" == "5"',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('"a" >= "a"',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('"6" <= "6"',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        
 
 class VariableTest(unittest.TestCase):
     
@@ -213,7 +267,7 @@ class IfTest(unittest.TestCase):
         self.assertEqual(result.to_string(), 'true')
     
         result = parser.parse('if false: true end',self.s).eval(self.e)
-        self.assertEqual(type(result), parser.Noop)
+        self.assertEqual(type(result), parser.Null)
     
     def test_if_else(self):
         

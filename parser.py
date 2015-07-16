@@ -2,6 +2,7 @@
 from rply import ParserGenerator
 from rply.token import BaseBox, Token
 from ast import *
+from errors import *
 import lexer
 import os
 
@@ -15,16 +16,18 @@ pg = ParserGenerator(
     # A list of all token names, accepted by the parser.
     ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'VARIABLE', 'BOOLEAN',
      'OPEN_PARENS', 'CLOSE_PARENS','PLUS', 'MINUS', 'MUL', 'DIV',
-     '=', '==', '!=', '$end', 'NEWLINE', 'IF', 'ELSE', 'COLON', 'END',
+     'IF', 'ELSE', 'COLON', 'END',
+     '=', '==', '!=', '>=', '<=', '<', '>', '$end', 'NEWLINE',
+     
     ],
     # A list of precedence rules with ascending precedence, to
     # disambiguate ambiguous production rules.
     precedence=[
         ('left', ['=']),
-        ('left', ['IF','COLON','ELSE','END','NEWLINE',]),
-        ('left', ['==','!=']),
-        ('left', ['PLUS', 'MINUS']),
-        ('left', ['MUL', 'DIV']),
+        ('left', ['IF', 'COLON', 'ELSE', 'END', 'NEWLINE',]),
+        ('left', ['==', '!=', '>=','>', '<', '<=',]),
+        ('left', ['PLUS', 'MINUS',]),
+        ('left', ['MUL', 'DIV',]),
         
     ]
 )
@@ -47,11 +50,11 @@ def program_statement_program(state, p):
     program.add_statement(p[0])
     return p[2]
 
-@pg.production('block : expression NEWLINE')
+@pg.production('block : statement NEWLINE')
 def block_expr(state, p):
     return Block(p[0])
 
-@pg.production('block : expression NEWLINE block')
+@pg.production('block : statement NEWLINE block')
 def block_expr_block(state, p):
     if type(p[2]) is Block:
         b = p[2]
@@ -65,7 +68,7 @@ def block_expr_block(state, p):
 @pg.production('terminator : $end')
 @pg.production('statement : terminator')
 def statement_end(state, p):
-    return Noop()
+    return Null()
 
 @pg.production('statement : expression')
 def statement_expr(state, p):
@@ -75,6 +78,10 @@ def statement_expr(state, p):
 def statement_print(state, p):    
     #os.write(1, p[2].eval())
     return Print(p[2])
+
+@pg.production('statement : VARIABLE = expression')
+def statement_assignment(state, p):
+    return Assignment(Variable(p[0].getstr()),p[2])
 
 @pg.production('const : FLOAT')
 def expression_float(state, p):
@@ -98,15 +105,11 @@ def expression_string(state, p):
 def expression_const(state, p):
     return p[0]
 
-@pg.production('expression : VARIABLE = expression')
-def statement_assignment(state, p):
-    return Assignment(Variable(p[0].getstr()),p[2])
-
-@pg.production('expression : IF expression COLON expression END')
+@pg.production('expression : IF expression COLON statement END')
 def expression_if_single_line(state, p):
     return If(condition=p[1],body=p[3])
 
-@pg.production('expression : IF expression COLON expression ELSE COLON expression END')
+@pg.production('expression : IF expression COLON statement ELSE COLON statement END')
 def expression_if_else_single_line(state, p):
     return If(condition=p[1],body=p[3],else_body=p[6])
 
@@ -146,21 +149,33 @@ def expression_binop(state, p):
     elif p[1].gettokentype() == 'DIV':
         return Div(left, right)
     else:
-        raise AssertionError('Oops, this should not be possible!')
+        raise LogicError('Oops, this should not be possible!')
 
 @pg.production('expression : expression != expression')
 @pg.production('expression : expression == expression')
+@pg.production('expression : expression >= expression')
+@pg.production('expression : expression <= expression')
+@pg.production('expression : expression > expression')
+@pg.production('expression : expression < expression')
 def expression_equality(state, p):
     left = p[0]
     right = p[2]
     check = p[1]
     
-    if p[1].gettokentype() == '==':
+    if check.gettokentype() == '==':
         return Equal(left, right)
-    elif p[1].gettokentype() == '!=':
+    elif check.gettokentype() == '!=':
         return NotEqual(left, right)
+    elif check.gettokentype() == '>=':
+        return GreaterThanEqual(left, right)
+    elif check.gettokentype() == '<=':
+        return LessThanEqual(left, right)
+    elif check.gettokentype() == '>':
+        return GreaterThan(left, right)
+    elif check.gettokentype() == '<':
+        return LessThan(left, right)
     else:
-        raise AssertionError("Shouldn't be possible")
+        raise LogicError("Shouldn't be possible")
 
 @pg.error
 def error_handler(state, token):
@@ -168,11 +183,11 @@ def error_handler(state, token):
     #print token
     pos = token.getsourcepos()
     if pos:
-        raise ValueError("Unexpected '%s' at line %d, col %d" % (token.gettokentype(), pos.lineno, pos.colno))
+        raise UnexpectedTokenError(token.gettokentype())
     elif token.gettokentype() == '$end':
-        raise ValueError("Unexpected end of statement")
+        raise UnexpectedEndError()
     else:
-        raise ValueError("Unexpected '%s'" % (token.gettokentype()))
+        raise UnexpectedTokenError(token.gettokentype())
 
 parser = pg.build()
 state = ParserState()

@@ -31,18 +31,23 @@ def printresult(result, prefix):
    
 def loop():
     state = parser.state
-    last = None
+    last = parser.Null()
+    
+    opening = 0
+    code = ''
     
     try:
         while True:
-            # loop forever until KeyboardInterrupt or other break
             
-            code = readline('>>> ') #.decode(sys.stdin.encoding or locale.getpreferredencoding(True) or 'ascii')
+            # loop forever until KeyboardInterrupt or other break
+            if opening > 0:
+                code += readline('... ')
+            else:                
+                code = readline('>>> ') #.decode(sys.stdin.encoding or locale.getpreferredencoding(True) or 'ascii')
             if code.strip() == '':
                 continue
             if code.strip() == ':a':
-                if last is not None:
-                    print last.rep()
+                print last.rep()
                 continue
             if code.strip() == ':e':
                 for key, var in env.variables.iteritems():
@@ -51,24 +56,30 @@ def loop():
             if code.strip() == ':q':
                 os.write(1, "\n")
                 break
+            
             try:
                 ast = parser.parse(code, state) # at this point we get AST
                 last = ast # store AST for later inspection
                 result = ast.eval(env)
                 env.variables['it'] = result
                 printresult(result,"= ")
-                
-            except ValueError as e:
-                os.write(2, "ERROR: " + str(e) + "\n")
-                if last is not None:
-                    print last.rep()
+                opening = 0
+            
+            except parser.UnexpectedEndError as e:
+                # just keep ignoring this till we break or complete
+                opening += 1
+                continue
+            
+            except parser.LogicError as e:
+                opening = 0 # reset
+                os.write(2, "ERROR: Cannot perform that operation\n")
                 continue
 
-            #except AttributeError as e:
-            #    os.write(2, "ERROR: " + str(e) + "\n")
-            #    print repr(last)
-            #    continue
-                
+            except parser.UnexpectedTokenError as e:
+                opening = 0 # reset
+                os.write(2, "ERROR: Unexpected '" + e.token + "'\n")
+                continue
+
     except KeyboardInterrupt:
         os.write(1, "\n")
 

@@ -1,4 +1,5 @@
 from rply.token import BaseBox
+from errors import *
 
 # all token types inherit rply's basebox as rpython needs this
 # these classes represent our Abstract Syntax Tree
@@ -52,16 +53,17 @@ class Block(BaseBox):
         return result
     
 
-class Noop(BaseBox):
+class Null(BaseBox):
     
     def eval(self, env):
         return self
     
     def to_string(self):
-        return '(noop)'
+        return '<null>'
 
     def rep(self):
-        return 'Noop()'
+        return 'Null()'
+
 
 class Boolean(BaseBox):
     def __init__(self, value):
@@ -79,19 +81,36 @@ class Boolean(BaseBox):
             return Boolean(self.to_int() == right.value)
         else:
             return Boolean(False)
-        raise ValueError("Cannot compare that to boolean")
+        raise LogicError("Cannot compare that to boolean")
+    
+    
+    def lte(self, right):
+        if type(right) is Boolean:
+            return Boolean(self.value == right.value)
+        raise LogicError("Cannot compare that to boolean")
+    
+    def lt(self, right):
+        raise LogicError("Cannot compare boolean that way")
+    
+    def gt(self, right):
+        raise LogicError("Cannot compare boolean that way")
+    
+    def gte(self, right):
+        if type(right) is Boolean:
+            return Boolean(self.value == right.value)
+        raise LogicError("Cannot compare that to boolean")
     
     def add(self, right):
-        raise ValueError("Cannot add that to boolean")
+        raise LogicError("Cannot add that to boolean")
     
     def sub(self, right):
-        raise ValueError("Cannot sub that from boolean")
+        raise LogicError("Cannot sub that from boolean")
     
     def mul(self, right):
-        raise ValueError("Cannot mul that to boolean")
+        raise LogicError("Cannot mul that to boolean")
     
     def div(self, right):
-        raise ValueError("Cannot div that from boolean")
+        raise LogicError("Cannot div that from boolean")
     
     def to_string(self):
         if self.value:
@@ -124,7 +143,35 @@ class Integer(BaseBox):
             return Boolean(self.value == right.value)
         if type(right) is Boolean:
             return Boolean(self.value == right.to_int())
-        raise ValueError("Cannot compare that to integer")
+        raise LogicError("Cannot compare that to integer")
+    
+    def lte(self, right):
+        if type(right) is Integer:
+            return Boolean(self.value <= right.value)
+        if type(right) is Float:
+            return Boolean(self.value <= right.value)
+        raise LogicError("Cannot compare that to integer")
+    
+    def lt(self, right):
+        if type(right) is Integer:
+            return Boolean(self.value < right.value)
+        if type(right) is Float:
+            return Boolean(self.value < right.value)
+        raise LogicError("Cannot compare integer that way")
+    
+    def gt(self, right):
+        if type(right) is Integer:
+            return Boolean(self.value > right.value)
+        if type(right) is Float:
+            return Boolean(self.value > right.value)
+        raise LogicError("Cannot compare integer that way")
+    
+    def gte(self, right):
+        if type(right) is Integer:
+            return Boolean(self.value >= right.value)
+        if type(right) is Float:
+            return Boolean(self.value >= right.value)
+        raise LogicError("Cannot compare integer that way")
     
     def add(self, right):
     
@@ -132,31 +179,32 @@ class Integer(BaseBox):
             return Integer(self.value + right.value)
         if type(right) is Float:
             return Float(self.value + right.value)
-        raise ValueError("Cannot add that to integer")
+        raise LogicError("Cannot add that to integer")
     
     def sub(self, right):
         if type(right) is Integer:
             return Integer(self.value - right.value)
         if type(right) is Float:
             return Float(self.value - right.value)
-        raise ValueError("Cannot sub from int")
+        raise LogicError("Cannot sub from int")
     
     def mul(self, right):
         if type(right) is Integer:
             return Integer(self.value * right.value)
         if type(right) is Float:
             return Float(self.value * right.value)
-        raise ValueError("Cannot mul that to int")
+        raise LogicError("Cannot mul that to int")
     
     def div(self, right):
         if type(right) is Integer:
             return Integer(self.value / right.value)
         if type(right) is Float:
             return Float(self.value / right.value)
-        raise ValueError("Cannot div that with int")
+        raise LogicError("Cannot div that with int")
 
     def rep(self):
         return 'Integer(%s)' % self.value
+
 
 class Float(BaseBox):
     def __init__(self, value):
@@ -175,7 +223,35 @@ class Float(BaseBox):
             return Boolean(self.value == right.value)
         if type(right) is Boolean:
             return Boolean(self.value == right.to_int())
-        raise ValueError("Cannot compare that to float")
+        raise LogicError("Cannot compare that to float")
+    
+    def lte(self, right):
+        if type(right) is Integer:
+            return Boolean(self.value <= right.value)
+        if type(right) is Float:
+            return Boolean(self.value <= right.value)
+        raise LogicError("Cannot compare that to integer")
+    
+    def lt(self, right):
+        if type(right) is Integer:
+            return Boolean(self.value < right.value)
+        if type(right) is Float:
+            return Boolean(self.value < right.value)
+        raise LogicError("Cannot compare integer that way")
+    
+    def gt(self, right):
+        if type(right) is Integer:
+            return Boolean(self.value > right.value)
+        if type(right) is Float:
+            return Boolean(self.value > right.value)
+        raise LogicError("Cannot compare integer that way")
+    
+    def gte(self, right):
+        if type(right) is Integer:
+            return Boolean(self.value >= right.value)
+        if type(right) is Float:
+            return Boolean(self.value >= right.value)
+        raise LogicError("Cannot compare integer that way")
     
     def add(self, right):
     
@@ -183,31 +259,32 @@ class Float(BaseBox):
             return Float(self.value + right.value)
         if type(right) is Float:
             return Float(self.value + right.value)
-        raise ValueError("Cannot add that to float")
+        raise LogicError("Cannot add that to float")
     
     def sub(self, right):
         if type(right) is Float:
             return Float(self.value - right.value)
         if type(right) is Integer:
             return Float(self.value - right.value)
-        raise ValueError("Cannot sub string")
+        raise LogicError("Cannot sub string")
     
     def mul(self, right):
         if type(right) is Integer:
             return Float(self.value * right.value)
         if type(right) is Float:
             return Float(self.value * right.value)
-        raise ValueError("Cannot mul that to float")
+        raise LogicError("Cannot mul that to float")
     
     def div(self, right):
         if type(right) is Integer:
             return Float(self.value / right.value)
         if type(right) is Float:
             return Float(self.value / right.value)
-        raise ValueError("Cannot div that with float")
+        raise LogicError("Cannot div that with float")
 
     def rep(self):
         return 'Float(%s)' % self.value
+
 
 class String(BaseBox):
     def __init__(self, value):
@@ -225,7 +302,23 @@ class String(BaseBox):
         if type(right) is Boolean:
             length = int(len(self.value) != 0)
             return Boolean(length == right.to_int())
-        raise ValueError("Cannot compare that to string")
+        raise LogicError("Cannot compare that to string")
+    
+    def lte(self, right):
+        if type(right) is String:
+            return Boolean(self.value == right.value)
+        raise LogicError("Cannot compare that to string")
+    
+    def lt(self, right):
+        raise LogicError("Cannot compare string that way")
+    
+    def gt(self, right):
+        raise LogicError("Cannot compare string that way")
+    
+    def gte(self, right):
+        if type(right) is String:
+            return Boolean(self.value == right.value)
+        raise LogicError("Cannot compare that to string")
     
     def add(self, right):
     
@@ -235,7 +328,7 @@ class String(BaseBox):
             return String(self.value + str(right.value))
         if type(right) is String:
             return String(self.value + right.value)
-        raise ValueError("Cannot add that to string")
+        raise LogicError("Cannot add that to string")
     
     def sub(self, right):
         if type(right) is Integer:
@@ -248,17 +341,17 @@ class String(BaseBox):
             sli = len(self.value) - int(right.value)
             assert(sli >= 0)
             return String(self.value[:sli])
-        raise ValueError("Cannot sub string")
+        raise LogicError("Cannot sub string")
     
     def mul(self, right):
         if type(right) is Integer:
             return String(self.value * right.value)
         if type(right) is Float:
             return String(self.value * int(right.value))
-        raise ValueError("Cannot multiply string with that")
+        raise LogicError("Cannot multiply string with that")
     
     def div(self, right):
-        raise ValueError("Cannot divide a string")
+        raise LogicError("Cannot divide a string")
     
     def rep(self):
         return 'String(%s)' % self.value
@@ -276,7 +369,7 @@ class Variable(BaseBox):
         if env.variables.get(self.name, None) is not None:
             self.value = env.variables[self.name].eval(env)
             return self.value
-        raise ValueError("Not yet defined")
+        raise LogicError("Not yet defined")
     
     def to_string(self):
         return str(self.name)
@@ -314,8 +407,9 @@ class Print(BaseBox):
     def rep(self):
         return "Print(%s)" % self.value.rep()
 
+
 class If(BaseBox):
-    def __init__(self, condition, body, else_body=None):
+    def __init__(self, condition, body, else_body=Null()):
         self.condition = condition
         self.body = body
         self.else_body = else_body
@@ -327,12 +421,13 @@ class If(BaseBox):
             return self.body.eval(env)
         else:
             
-            if self.else_body is not None:
+            if type(self.else_body) is not Null:
                 return self.else_body.eval(env)
-        return Noop()
+        return Null()
 
     def rep(self):
         return 'If(%s) Then(%s) Else(%s)' % (self.condition.rep(), self.body.rep(), self.else_body.rep())
+
 
 class BinaryOp(BaseBox):
     def __init__(self, left, right):
@@ -345,6 +440,7 @@ class BinaryOp(BaseBox):
     def rep(self):
         return  'BinaryOp(%s, %s)' % (self.left.rep(), self.right.rep())
 
+
 class Equal(BinaryOp):
     
     def rep(self):
@@ -352,6 +448,7 @@ class Equal(BinaryOp):
     
     def eval(self, env):
         return self.left.eval(env).equals(self.right.eval(env))
+
 
 class NotEqual(BinaryOp):
     
@@ -362,6 +459,42 @@ class NotEqual(BinaryOp):
         result = self.left.eval(env).equals(self.right.eval(env))
         result.value = not result.value
         return result
+
+
+class GreaterThan(BinaryOp):
+    
+    def rep(self):
+        return 'GreaterThan(%s, %s)' % (self.left.rep(), self.right.rep())
+    
+    def eval(self, env):
+        return self.left.eval(env).gt(self.right.eval(env))
+
+
+class LessThan(BinaryOp):
+    
+    def rep(self):
+        return 'LessThan(%s, %s)' % (self.left.rep(), self.right.rep())
+    
+    def eval(self, env):
+        return self.left.eval(env).lt(self.right.eval(env))
+
+
+class GreaterThanEqual(BinaryOp):
+    
+    def rep(self):
+        return 'GreaterThan(%s, %s)' % (self.left.rep(), self.right.rep())
+    
+    def eval(self, env):
+        return self.left.eval(env).gte(self.right.eval(env))
+
+
+class LessThanEqual(BinaryOp):
+    
+    def rep(self):
+        return 'LessThan(%s, %s)' % (self.left.rep(), self.right.rep())
+    
+    def eval(self, env):
+        return self.left.eval(env).lte(self.right.eval(env))
 
 
 class Add(BinaryOp):
@@ -412,6 +545,9 @@ class Assignment(BinaryOp):
             if env.variables.get(self.left.getname(), None) is None:
                 env.variables[self.left.getname()] = self.right.eval(env)
                 return self.right.eval(env)
-                
-        # otherwise raise error
-        raise ValueError("Cannot modify value")
+            
+            # otherwise raise error
+            raise ImmutableError(self.left.getname())
+        
+        else:
+            raise LogicError("Cannot assign to this")
