@@ -51,7 +51,43 @@ class Block(BaseBox):
             result += statement.rep()
         result += ')'
         return result
+
+class Array(BaseBox):
     
+    def map(self, fun, ls):  
+        nls = []
+        for l in ls:
+          nls.append(fun(l))
+        return nls
+    
+    def __init__(self, statement):
+        self.statements = []
+        self.values = []
+        self.statements.append(statement)
+    
+    def push(self, statement):
+        self.statements.insert(0,statement)
+    
+    def append(self, statement):
+        self.statements.append(statement)
+        
+    def eval(self, env):
+        #print "count: %s" % len(self.statements)
+        
+        if len(self.values) == 0:            
+            for statement in self.statements:
+                self.values.append(statement.eval(env))
+                #print result.to_string()
+        return self
+    
+    def rep(self):
+        result = 'Array('
+        result += ",".join(self.map(lambda x: x.rep(),self.statements))
+        result += ')'
+        return result
+    
+    def to_string(self):
+        return '[%s]' % (", ".join(self.map(lambda x: x.to_string(),self.values)))
 
 class Null(BaseBox):
     

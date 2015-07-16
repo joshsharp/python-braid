@@ -15,15 +15,17 @@ class ParserState(object):
 pg = ParserGenerator(
     # A list of all token names, accepted by the parser.
     ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'VARIABLE', 'BOOLEAN',
-     'OPEN_PARENS', 'CLOSE_PARENS','PLUS', 'MINUS', 'MUL', 'DIV',
+     'PLUS', 'MINUS', 'MUL', 'DIV',
      'IF', 'ELSE', 'COLON', 'END',
-     '=', '==', '!=', '>=', '<=', '<', '>', '$end', 'NEWLINE',
+     '(', ')', '=', '==', '!=', '>=', '<=', '<', '>', '[', ']', ',',
+     '$end', 'NEWLINE',
      
     ],
     # A list of precedence rules with ascending precedence, to
     # disambiguate ambiguous production rules.
     precedence=[
         ('left', ['=']),
+        ('left', ['[',']',',']),
         ('left', ['IF', 'COLON', 'ELSE', 'END', 'NEWLINE',]),
         ('left', ['==', '!=', '>=','>', '<', '<=',]),
         ('left', ['PLUS', 'MINUS',]),
@@ -62,7 +64,7 @@ def block_expr_block(state, p):
         b = Block(p[2])
     
     b.add_statement(p[0])
-    return p[2]
+    return b
 
 @pg.production('terminator : NEWLINE')
 @pg.production('terminator : $end')
@@ -74,7 +76,7 @@ def statement_end(state, p):
 def statement_expr(state, p):
     return p[0]
 
-@pg.production('expression : PRINT OPEN_PARENS expression CLOSE_PARENS')
+@pg.production('expression : PRINT ( expression )')
 def statement_print(state, p):    
     #os.write(1, p[2].eval())
     return Print(p[2])
@@ -105,6 +107,20 @@ def expression_string(state, p):
 def expression_const(state, p):
     return p[0]
 
+@pg.production('expressionlist : expression')
+def expressionlist_single(state, p):
+    return p[0]
+
+@pg.production('expressionlist : expression , expressionlist')
+def expressionlist(state, p):
+    b = Array(p[2])
+    b.push(p[0])
+    return b
+
+@pg.production('expression : [ expressionlist ]')
+def expression_array(state, p):
+    return p[1]
+
 @pg.production('expression : IF expression COLON statement END')
 def expression_if_single_line(state, p):
     return If(condition=p[1],body=p[3])
@@ -126,7 +142,7 @@ def expression_variable(state, p):
     # cannot return the value of a variable if it isn't yet defined
     return Variable(p[0].getstr())
 
-@pg.production('expression : OPEN_PARENS expression CLOSE_PARENS')
+@pg.production('expression : ( expression )')
 def expression_parens(state, p):
     # in this case we need parens only for precedence
     # so we just need to return the inner expression
