@@ -22,7 +22,7 @@ def readline(prompt=None):
         buf = os.read(0, 16)
         if not buf: return res
         res += buf
-        if res[-1] == '\n': return res[:-1]
+        if res[-1] == '\n': return res
 
 
 def printresult(result, prefix):

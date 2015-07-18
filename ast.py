@@ -95,7 +95,7 @@ class Null(BaseBox):
         return self
     
     def to_string(self):
-        return '<null>'
+        return 'null'
 
     def rep(self):
         return 'Null()'
@@ -330,7 +330,7 @@ class String(BaseBox):
         return self
 
     def to_string(self):
-        return str(self.value)
+        return '"%s"' % str(self.value)
 
     def equals(self, right):
         if type(right) is String:

@@ -35,7 +35,7 @@ lg.add('NEWLINE', '\n')
 # ignore whitespace
 lg.ignore('[ \t\r\f\v]+')
 # ignore comments
-lg.ignore(r'#.*(?:\n|\r|\r\n|\n\r|$)')
+#lg.ignore(r'#.*(?:\n|\r|\r\n|\n\r|$)')
 
 lexer = lg.build()
 

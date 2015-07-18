@@ -66,11 +66,11 @@ def block_expr_block(state, p):
     b.add_statement(p[0])
     return b
 
-@pg.production('terminator : NEWLINE')
-@pg.production('terminator : $end')
-@pg.production('statement : terminator')
-def statement_end(state, p):
-    return Null()
+#@pg.production('terminator : NEWLINE')
+#@pg.production('terminator : $end')
+#@pg.production('statement : terminator')
+#def statement_end(state, p):
+#    return Null()
 
 @pg.production('statement : expression')
 def statement_expr(state, p):
