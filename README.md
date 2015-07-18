@@ -24,7 +24,7 @@ The result of the last statement is stored in `it`, so you can do:
 ```
 >>> 5 + 5
 = 10
->>> a = it
+>>> let a = it
 = 10
 print(a)
 = 10
@@ -37,7 +37,7 @@ Other stuff:
 = true
 >>> 5 != 5
 = false
->>> a = 5
+>>> let a = 5
 = 5
 >>> print(a)
 5
@@ -49,13 +49,13 @@ Other stuff:
 = hihihihih
 >>> if false: print("no") else: print("yes") end
 yes
->>> a = (if true: 1 else: 5 end)
+>>> let a = (if true: 1 else: 5 end)
 = 1
 ```
 
 ```
-a = 50
-if a == 50:
+let a = 50
+if a == 50 and true:
   print("doing stuff")
 else:
   print("not this though")
@@ -65,7 +65,7 @@ end
 = false
 ```
 ```
->>> a = if true: 5 end
+>>> let a = if true: 5 end
 = 5
 >>> :a
 Program(BinaryOp(Variable('a'), If(Boolean(True))Then(Integer(5))Else(None)))
