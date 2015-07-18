@@ -16,7 +16,7 @@ pg = ParserGenerator(
     # A list of all token names, accepted by the parser.
     ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'VARIABLE', 'BOOLEAN',
      'PLUS', 'MINUS', 'MUL', 'DIV',
-     'IF', 'ELSE', 'COLON', 'END',
+     'IF', 'ELSE', 'COLON', 'END', 'AND', 'OR', 'NOT',
      '(', ')', '=', '==', '!=', '>=', '<=', '<', '>', '[', ']', ',',
      '$end', 'NEWLINE',
      
@@ -27,6 +27,8 @@ pg = ParserGenerator(
         ('left', ['=']),
         ('left', ['[',']',',']),
         ('left', ['IF', 'COLON', 'ELSE', 'END', 'NEWLINE',]),
+        ('left', ['AND', 'OR',]),
+        ('left', ['NOT',]),
         ('left', ['==', '!=', '>=','>', '<', '<=',]),
         ('left', ['PLUS', 'MINUS',]),
         ('left', ['MUL', 'DIV',]),
@@ -173,6 +175,8 @@ def expression_binop(state, p):
 @pg.production('expression : expression <= expression')
 @pg.production('expression : expression > expression')
 @pg.production('expression : expression < expression')
+@pg.production('expression : expression AND expression')
+@pg.production('expression : expression OR expression')
 def expression_equality(state, p):
     left = p[0]
     right = p[2]
@@ -190,6 +194,10 @@ def expression_equality(state, p):
         return GreaterThan(left, right)
     elif check.gettokentype() == '<':
         return LessThan(left, right)
+    elif check.gettokentype() == 'AND':
+        return And(left, right)
+    elif check.gettokentype() == 'OR':
+        return Or(left, right)
     else:
         raise LogicError("Shouldn't be possible")
 

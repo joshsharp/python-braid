@@ -533,6 +533,41 @@ class LessThanEqual(BinaryOp):
         return self.left.eval(env).lte(self.right.eval(env))
 
 
+class And(BinaryOp):
+    
+    def rep(self):
+        return 'And(%s, %s)' % (self.left.rep(), self.right.rep())
+    
+    def eval(self, env):
+        one = self.left.eval(env).equals(Boolean(True))
+        two = self.right.eval(env).equals(Boolean(True))
+        return Boolean(one.value and two.value)
+
+
+class Or(BinaryOp):
+    
+    def rep(self):
+        return 'Or(%s, %s)' % (self.left.rep(), self.right.rep())
+    
+    def eval(self, env):
+        one = self.left.eval(env).equals(Boolean(True))
+        two = self.right.eval(env).equals(Boolean(True))
+        # must remember to use inner primitive values
+        return Boolean(one.value or two.value)
+
+
+class Not(BaseBox):
+    
+    def __init__(self, value):
+        self.value = value
+    
+    def rep(self):
+        return 'Not(%s)' % (self.value.rep())
+    
+    def eval(self, env):
+        return Boolean(not self.value.eval(env).value)
+
+
 class Add(BinaryOp):
     
     def rep(self):
