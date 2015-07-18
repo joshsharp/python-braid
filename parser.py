@@ -144,6 +144,10 @@ def expression_variable(state, p):
     # cannot return the value of a variable if it isn't yet defined
     return Variable(p[0].getstr())
 
+@pg.production('expression : NOT expression ')
+def expression_not(state, p):
+    return Not(p[1])
+
 @pg.production('expression : ( expression )')
 def expression_parens(state, p):
     # in this case we need parens only for precedence
