@@ -72,7 +72,7 @@ def loop():
             
             except parser.LogicError as e:
                 opening = 0 # reset
-                os.write(2, "ERROR: Cannot perform that operation\n")
+                os.write(2, "ERROR: Cannot perform that operation (%s)\n" % e)
                 continue
 
             except parser.UnexpectedTokenError as e:

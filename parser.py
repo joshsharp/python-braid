@@ -16,7 +16,7 @@ pg = ParserGenerator(
     # A list of all token names, accepted by the parser.
     ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'VARIABLE', 'BOOLEAN',
      'PLUS', 'MINUS', 'MUL', 'DIV',
-     'IF', 'ELSE', 'COLON', 'END', 'AND', 'OR', 'NOT',
+     'IF', 'ELSE', 'COLON', 'END', 'AND', 'OR', 'NOT', 'LET',
      '(', ')', '=', '==', '!=', '>=', '<=', '<', '>', '[', ']', ',',
      '$end', 'NEWLINE', 'COMMENT',
      
@@ -24,6 +24,7 @@ pg = ParserGenerator(
     # A list of precedence rules with ascending precedence, to
     # disambiguate ambiguous production rules.
     precedence=[
+        ('left', ['LET']),
         ('left', ['=']),
         ('left', ['[',']',',']),
         ('left', ['IF', 'COLON', 'ELSE', 'END', 'NEWLINE','COMMENT']),
@@ -93,9 +94,9 @@ def statement_print(state, p):
     #os.write(1, p[2].eval())
     return Print(p[2])
 
-@pg.production('statement : VARIABLE = expression')
+@pg.production('statement : LET VARIABLE = expression')
 def statement_assignment(state, p):
-    return Assignment(Variable(p[0].getstr()),p[2])
+    return Assignment(Variable(p[1].getstr()),p[3])
 
 @pg.production('const : FLOAT')
 def expression_float(state, p):
