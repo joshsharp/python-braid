@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 #from __future__ import unicode_literals
 import unittest
 import parser
@@ -392,6 +393,33 @@ class CommentTest(unittest.TestCase):
         self.assertEqual(result.to_string(), 'true')
         result = parser.parse('true != false # woop',self.s).eval(self.e)
         self.assertEqual(result.to_string(), 'true')
+
+
+class ArrayTest(unittest.TestCase):
+    
+    def setUp(self):
+        self.s = parser.ParserState()
+        self.e = Environment()
+    
+    def test_simple(self):
+        result = parser.parse('[5]',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), '[5]')
+        
+        result = parser.parse('[5,]',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), '[5]')
+        
+        result = parser.parse('[5,6]',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), '[5, 6]')
+    
+    def test_nested(self):
+        result = parser.parse('[5, [6]]',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), '[5, [6]]')
+        
+        result = parser.parse('[5, [6, 7]]',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), '[5, [6, 7]]')
+        
+        result = parser.parse('[5,[6,[7]]]',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), '[5, [6, [7]]]')
 
 
 if __name__ == '__main__':
