@@ -120,6 +120,7 @@ def expression_const(state, p):
     return p[0]
 
 @pg.production('expressionlist : expression')
+@pg.production('expressionlist : expression ,')
 def expressionlist_single(state, p):
     return p[0]
 
@@ -131,7 +132,9 @@ def expressionlist(state, p):
 
 @pg.production('expression : [ expressionlist ]')
 def expression_array(state, p):
-    return p[1]
+    if type(p[1] is Array):
+        return p[1]
+    return Array(p[1])
 
 @pg.production('expression : IF expression COLON statement END')
 def expression_if_single_line(state, p):

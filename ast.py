@@ -52,6 +52,7 @@ class Block(BaseBox):
         result += ')'
         return result
 
+
 class Array(BaseBox):
     
     def map(self, fun, ls):  
@@ -88,6 +89,7 @@ class Array(BaseBox):
     
     def to_string(self):
         return '[%s]' % (", ".join(self.map(lambda x: x.to_string(),self.values)))
+
 
 class Null(BaseBox):
     
