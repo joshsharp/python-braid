@@ -132,7 +132,7 @@ def expressionlist(state, p):
 
 @pg.production('expression : [ expressionlist ]')
 def expression_array(state, p):
-    if type(p[1] is Array):
+    if type(p[1]) is Array:
         return p[1]
     return Array(p[1])
 
