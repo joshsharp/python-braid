@@ -70,19 +70,16 @@ def block_expr_block(state, p):
     return b
 
 
+#@pg.production('statement_full : comment_line')
 @pg.production('statement_full : statement COMMENT')
 @pg.production('statement_full : statement COMMENT NEWLINE')
 @pg.production('statement_full : statement NEWLINE')
+@pg.production('statement_full : statement NEWLINE COMMENT NEWLINE')
+@pg.production('statement_full : statement NEWLINE COMMENT $end')
+@pg.production('statement_full : statement NEWLINE COMMENT')
 @pg.production('statement_full : statement $end')
-@pg.production('statement_full : comment_line')
 def statement_full(state, p):
     return p[0]
-
-@pg.production('comment_line : COMMENT')
-@pg.production('comment_line : COMMENT $end')
-@pg.production('comment_line : COMMENT NEWLINE')
-def statement_end(state, p):
-    return Null()
 
 @pg.production('statement : expression')
 def statement_expr(state, p):
