@@ -334,6 +334,7 @@ class CommentTest(unittest.TestCase):
                     g = 5 # yes
                     # good
                     print(15)
+                    6
                 else:
                     1
                     # nah
@@ -342,7 +343,7 @@ class CommentTest(unittest.TestCase):
             result = parser.parse(code,self.s).eval(self.e)
             output = out.getvalue().strip()
         
-        self.assertEqual(result.to_string(), 'null')
+        self.assertEqual(result.to_string(), '6')
         self.assertEqual(output, '15')
 
     def test_print_value(self):
