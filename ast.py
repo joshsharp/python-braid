@@ -61,24 +61,39 @@ class Array(BaseBox):
           nls.append(fun(l))
         return nls
     
-    def __init__(self, statement):
+    def __init__(self, statements = None):
         self.statements = []
         self.values = []
-        self.statements.append(statement)
+        if statements:
+            self.statements = statements
     
     def push(self, statement):
         self.statements.insert(0,statement)
     
     def append(self, statement):
         self.statements.append(statement)
-        
+    
+    def index(self, i):
+        if type(i) is Integer:
+            return self.values[i.value]
+        if type(i) is Float:
+            return self.values[int(i.value)]
+        raise LogicError("Cannot index with that value")
+    
+    def add(self, right):
+    
+        if type(right) is Array:
+            result = Array()
+            result.values.extend(self.values)
+            result.values.extend(right.values)
+            return result
+        raise LogicError("Cannot add that to array")
+    
     def eval(self, env):
-        #print "count: %s" % len(self.statements)
         
         if len(self.values) == 0:            
             for statement in self.statements:
                 self.values.append(statement.eval(env))
-                #print result.to_string()
         return self
     
     def rep(self):
@@ -102,6 +117,11 @@ class Null(BaseBox):
     def rep(self):
         return 'Null()'
 
+    def equals(self, right):
+        if type(right) is Null:
+            return Boolean(True)
+        return Boolean(False)
+    
 
 class Boolean(BaseBox):
     def __init__(self, value):
@@ -624,3 +644,19 @@ class Assignment(BinaryOp):
         
         else:
             raise LogicError("Cannot assign to this")
+
+
+class Index(BinaryOp):
+    
+    def rep(self):
+        return  'Index(%s, %s)' % (self.left.rep(), self.right.rep())
+    
+    def eval(self, env):
+        
+        left = self.left.eval(env)
+        if type(left) is Array:
+            return left.index(self.right.eval(env))
+        if type(left) is String:
+            return left.index(self.right.eval(env))
+        
+        raise LogicError("Cannot index this")

@@ -112,22 +112,28 @@ def expression_string(state, p):
 def expression_const(state, p):
     return p[0]
 
-@pg.production('expressionlist : expression')
-@pg.production('expressionlist : expression ,')
-def expressionlist_single(state, p):
-    return p[0]
-
-@pg.production('expressionlist : expression , expressionlist')
-def expressionlist(state, p):
-    b = Array(p[2])
-    b.push(p[0])
-    return b
+@pg.production('expression : [ expression ]')
+def expression_array_single(state, p):
+    return Array([p[1]])
 
 @pg.production('expression : [ expressionlist ]')
 def expression_array(state, p):
-    if type(p[1]) is Array:
-        return p[1]
     return Array(p[1])
+
+@pg.production('expressionlist : expression')
+@pg.production('expressionlist : expression ,')
+def expressionlist_single(state, p):
+    return [p[0]]
+
+@pg.production('expressionlist : expression , expressionlist')
+def expressionlist(state, p):
+    if type(p[2]) is list:
+        return [p[0]] + p[2]
+    return [p[0]] + [p[2]]
+
+@pg.production('expression : expression [ expression ]')
+def expression_array_index(state, p):
+    return Index(p[0],p[2])
 
 @pg.production('expression : IF expression COLON statement END')
 def expression_if_single_line(state, p):
