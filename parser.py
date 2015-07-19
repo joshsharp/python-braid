@@ -71,19 +71,11 @@ def block_expr_block(state, p):
     return b
 
 
-@pg.production('statement_full : statement COMMENT')
-@pg.production('statement_full : statement COMMENT NEWLINE')
+
 @pg.production('statement_full : statement NEWLINE')
 @pg.production('statement_full : statement $end')
-@pg.production('statement_full : comment_line')
 def statement_full(state, p):
     return p[0]
-
-@pg.production('comment_line : COMMENT')
-@pg.production('comment_line : COMMENT $end')
-@pg.production('comment_line : COMMENT NEWLINE')
-def statement_end(state, p):
-    return Null()
 
 @pg.production('statement : expression')
 def statement_expr(state, p):
@@ -150,9 +142,6 @@ def expression_if_else_single_line(state, p):
 def expression_if(state, p):
     return If(condition=p[1],body=p[4])
 
-@pg.production('expression : IF expression COLON COMMENT block ELSE COLON COMMENT block END')
-@pg.production('expression : IF expression COLON COMMENT block ELSE COLON NEWLINE block END')
-@pg.production('expression : IF expression COLON NEWLINE block ELSE COLON COMMENT block END')
 @pg.production('expression : IF expression COLON NEWLINE block ELSE COLON NEWLINE block END')
 def expression_if_else(state, p):
     return If(condition=p[1],body=p[4],else_body=p[8])

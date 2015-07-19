@@ -18,7 +18,7 @@ class UnexpectedTokenError(Exception):
         self.token = token
 
     def __str__(self):
-        return self.message
+        return self.token
 
 
 class ImmutableError(Exception):
