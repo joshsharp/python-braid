@@ -69,26 +69,26 @@ class ArithmeticTest(unittest.TestCase):
 
 class StringTest(unittest.TestCase):
     
-    def setUp(self):
+    def setUp(self):    
         self.s = parser.ParserState()
         self.e = Environment()
     
     def test_value(self):
         result = parser.parse('"a"',self.s).eval(self.e)
-        self.assertEqual(result.to_string(), "a")
+        self.assertEqual(result.to_string(), '"a"')
 
         result = parser.parse("'a'",self.s).eval(self.e)
-        self.assertEqual(result.to_string(), "a")
+        self.assertEqual(result.to_string(), '"a"')
         
         result = parser.parse('"""a b"""',self.s).eval(self.e)
-        self.assertEqual(result.to_string(), "a b")
+        self.assertEqual(result.to_string(), '"a b"')
         
         result = parser.parse('"""a "b" c"""',self.s).eval(self.e)
-        self.assertEqual(result.to_string(), 'a "b" c')
+        self.assertEqual(result.to_string(), '"a "b" c"')
 
     def test_concat(self):
         result = parser.parse('"hi" + "yo"',self.s).eval(self.e)
-        self.assertEqual(result.to_string(), "hiyo")
+        self.assertEqual(result.to_string(), '"hiyo"')
         
 
 class BooleanTest(unittest.TestCase):
@@ -195,9 +195,9 @@ class VariableTest(unittest.TestCase):
    
     def test_assignment_string(self):
         result = parser.parse('l = "hey"',self.s).eval(self.e)
-        self.assertEqual(result.to_string(), 'hey')
+        self.assertEqual(result.to_string(), '"hey"')
         result = parser.parse('l',self.s).eval(self.e)
-        self.assertEqual(result.to_string(), "hey")
+        self.assertEqual(result.to_string(), '"hey"')
         
     def test_assignment_bool(self):
         result = parser.parse('o = true',self.s).eval(self.e)
@@ -223,7 +223,7 @@ class VariableTest(unittest.TestCase):
             output = out.getvalue().strip()
         
         
-        self.assertEqual(result.to_string(), '15')
+        self.assertEqual(result.to_string(), 'null')
         self.assertEqual(output, '15')
             
 class PrintTest(unittest.TestCase):
@@ -286,7 +286,7 @@ class IfTest(unittest.TestCase):
             result = parser.parse(code,self.s).eval(self.e)
             output = out.getvalue().strip()
         
-        self.assertEqual(result.to_string(), '15')
+        self.assertEqual(result.to_string(), 'null')
         self.assertEqual(output, '15')
     
     def test_multiline2(self):
@@ -301,8 +301,8 @@ class IfTest(unittest.TestCase):
             result = parser.parse(code,self.s).eval(self.e)
             output = out.getvalue().strip()
         
-        self.assertEqual(result.to_string(), 'no')
-        self.assertEqual(output, 'no')
+        self.assertEqual(result.to_string(), 'null')
+        self.assertEqual(output, '"no"')
 
     def test_assignment(self):
         code = """a = 5
@@ -312,8 +312,86 @@ class IfTest(unittest.TestCase):
             result = parser.parse(code,self.s).eval(self.e)
             output = out.getvalue().strip()
         
-        self.assertEqual(result.to_string(), '1')
+        self.assertEqual(result.to_string(), 'null')
         self.assertEqual(output, '1')
+
+
+class CommentTest(unittest.TestCase):
+    
+    def setUp(self):
+        self.s = parser.ParserState()
+        self.e = Environment()
+    
+    def test_if(self):
+        
+        result = parser.parse('if true: true end #yo',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+    
+        result = parser.parse('if false: true end # all good',self.s).eval(self.e)
+        self.assertEqual(type(result), parser.Null)
+        
+        code = """if true: # hi
+                    g = 5 # yes
+                    # good
+                    print(15)
+                else:
+                    1
+                    # nah
+                end # fine"""
+        with captured_output() as (out, err):
+            result = parser.parse(code,self.s).eval(self.e)
+            output = out.getvalue().strip()
+        
+        self.assertEqual(result.to_string(), 'null')
+        self.assertEqual(output, '15')
+
+    def test_print_value(self):
+        
+        with captured_output() as (out, err):
+            result = parser.parse('print(3) #hi',self.s).eval(self.e)
+            
+            output = out.getvalue().strip()
+            self.assertEqual(output, '3')
+        
+        with captured_output() as (out, err):
+            result = parser.parse('print(3 * 5) # tessst',self.s).eval(self.e)
+            
+            output = out.getvalue().strip()
+            self.assertEqual(output, '15')    
+    
+    def test_assignment(self):
+        result = parser.parse('a = 50 #hi',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), '50')
+        result = parser.parse('a # yes',self.s).eval(self.e)
+        self.assertEqual(type(result), parser.Integer)
+        self.assertEqual(result.to_string(), '50')
+
+    def test_multiline(self):
+        code = """one = 5
+                two = 10
+                # this next line is important
+                three = one + two # whoa
+                print(three)"""
+        with captured_output() as (out, err):
+            result = parser.parse(code,self.s).eval(self.e)
+            output = out.getvalue().strip()
+        
+        
+        self.assertEqual(result.to_string(), 'null')
+        self.assertEqual(output, '15')
+
+    def test_concat(self):
+        result = parser.parse('"hi" + "yo" # wheeee',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), '"hiyo"')
+
+    def test_numbers(self):
+        result = parser.parse('5 == 5 # nice',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('5 >= 5 # ooh',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+        result = parser.parse('true != false # woop',self.s).eval(self.e)
+        self.assertEqual(result.to_string(), 'true')
+
 
 if __name__ == '__main__':
     unittest.main()

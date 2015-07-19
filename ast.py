@@ -390,7 +390,7 @@ class String(BaseBox):
         raise LogicError("Cannot divide a string")
     
     def rep(self):
-        return 'String(%s)' % self.value
+        return 'String("%s")' % self.value
         
     
 class Variable(BaseBox):
@@ -435,7 +435,7 @@ class Print(BaseBox):
     
     def eval(self, env):
         print self.value.eval(env).to_string()
-        return self.value.eval(env) 
+        return Null() #self.value.eval(env) 
     
     def to_string(self):
         return "Print"

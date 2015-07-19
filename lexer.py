@@ -34,11 +34,12 @@ lg.add('DIV', '/')
 lg.add('(', '\(')
 lg.add(')', '\)')
 lg.add('NEWLINE', '\n')
+lg.add('COMMENT',r'#.*(?:\n|\Z)')
 
 # ignore whitespace
 lg.ignore('[ \t\r\f\v]+')
 # ignore comments
-#lg.ignore(r'#.*(?:\n|\r|\r\n|\n\r|$)')
+#lg.ignore(r'#.*(?:\n|\Z)')
 
 lexer = lg.build()
 

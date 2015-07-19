@@ -18,7 +18,7 @@ pg = ParserGenerator(
      'PLUS', 'MINUS', 'MUL', 'DIV',
      'IF', 'ELSE', 'COLON', 'END', 'AND', 'OR', 'NOT',
      '(', ')', '=', '==', '!=', '>=', '<=', '<', '>', '[', ']', ',',
-     '$end', 'NEWLINE',
+     '$end', 'NEWLINE', 'COMMENT',
      
     ],
     # A list of precedence rules with ascending precedence, to
@@ -26,7 +26,7 @@ pg = ParserGenerator(
     precedence=[
         ('left', ['=']),
         ('left', ['[',']',',']),
-        ('left', ['IF', 'COLON', 'ELSE', 'END', 'NEWLINE',]),
+        ('left', ['IF', 'COLON', 'ELSE', 'END', 'NEWLINE','COMMENT']),
         ('left', ['AND', 'OR',]),
         ('left', ['NOT',]),
         ('left', ['==', '!=', '>=','>', '<', '<=',]),
@@ -40,39 +40,49 @@ pg = ParserGenerator(
 def main_program(self, p):
     return p[0]
 
-@pg.production('program : statement')
+@pg.production('program : statement_full')
 def program_statement(state, p):
     return Program(p[0])
 
-@pg.production('program : statement NEWLINE program')
+@pg.production('program : statement_full program')
 def program_statement_program(state, p):
-    if type(p[2]) is Program:
-        program = p[2]
+    if type(p[1]) is Program:
+        program = p[1]
     else:
-        program = Program(p[2])
+        program = Program(p[12])
     
     program.add_statement(p[0])
-    return p[2]
+    return p[1]
 
-@pg.production('block : statement NEWLINE')
+@pg.production('block : statement_full')
 def block_expr(state, p):
     return Block(p[0])
 
-@pg.production('block : statement NEWLINE block')
+
+@pg.production('block : statement_full block')
 def block_expr_block(state, p):
-    if type(p[2]) is Block:
-        b = p[2]
+    if type(p[1]) is Block:
+        b = p[1]
     else:
-        b = Block(p[2])
+        b = Block(p[1])
     
     b.add_statement(p[0])
     return b
 
-#@pg.production('terminator : NEWLINE')
-#@pg.production('terminator : $end')
-#@pg.production('statement : terminator')
-#def statement_end(state, p):
-#    return Null()
+
+@pg.production('statement_full : statement COMMENT')
+@pg.production('statement_full : statement COMMENT NEWLINE')
+@pg.production('statement_full : statement NEWLINE')
+@pg.production('statement_full : statement $end')
+@pg.production('statement_full : comment_line')
+def statement_full(state, p):
+    return p[0]
+
+@pg.production('comment_line : COMMENT')
+@pg.production('comment_line : COMMENT $end')
+@pg.production('comment_line : COMMENT NEWLINE')
+def statement_end(state, p):
+    return Null()
 
 @pg.production('statement : expression')
 def statement_expr(state, p):
@@ -131,10 +141,14 @@ def expression_if_single_line(state, p):
 def expression_if_else_single_line(state, p):
     return If(condition=p[1],body=p[3],else_body=p[6])
 
+@pg.production('expression : IF expression COLON COMMENT block END')
 @pg.production('expression : IF expression COLON NEWLINE block END')
 def expression_if(state, p):
     return If(condition=p[1],body=p[4])
 
+@pg.production('expression : IF expression COLON COMMENT block ELSE COLON COMMENT block END')
+@pg.production('expression : IF expression COLON COMMENT block ELSE COLON NEWLINE block END')
+@pg.production('expression : IF expression COLON NEWLINE block ELSE COLON COMMENT block END')
 @pg.production('expression : IF expression COLON NEWLINE block ELSE COLON NEWLINE block END')
 def expression_if_else(state, p):
     return If(condition=p[1],body=p[4],else_body=p[8])
