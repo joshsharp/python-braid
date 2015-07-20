@@ -114,7 +114,7 @@ def expression_const(state, p):
 
 @pg.production('expression : [ expression ]')
 def expression_array_single(state, p):
-    return Array([p[1]])
+    return Array(InnerArray([p[1]]))
 
 @pg.production('expression : [ expressionlist ]')
 def expression_array(state, p):
@@ -123,13 +123,13 @@ def expression_array(state, p):
 @pg.production('expressionlist : expression')
 @pg.production('expressionlist : expression ,')
 def expressionlist_single(state, p):
-    return [p[0]]
+    return InnerArray([p[0]])
 
 @pg.production('expressionlist : expression , expressionlist')
 def expressionlist(state, p):
-    if type(p[2]) is list:
-        return [p[0]] + p[2]
-    return [p[0]] + [p[2]]
+    # expressionlist should already be an InnerArray
+    p[2].push(p[0])
+    return p[2]
 
 @pg.production('expression : expression [ expression ]')
 def expression_array_index(state, p):

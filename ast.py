@@ -52,6 +52,28 @@ class Block(BaseBox):
         result += ')'
         return result
 
+class InnerArray(BaseBox):
+    """
+    Only used to handle array values which are passed to Array.
+    """
+    
+    def __init__(self, statements = None):
+        self.statements = []
+        self.values = []
+        if statements:
+            self.statements = statements
+
+    def push(self, statement):
+        self.statements.insert(0,statement)
+    
+    def append(self, statement):
+        self.statements.append(statement)
+
+    def extend(self, statements):
+        self.statements.extend(statements)
+
+    def get_statements(self):
+        return self.statements
 
 class Array(BaseBox):
     
@@ -61,11 +83,9 @@ class Array(BaseBox):
           nls.append(fun(l))
         return nls
     
-    def __init__(self, statements = None):
-        self.statements = []
+    def __init__(self, inner):
+        self.statements = inner.get_statements()
         self.values = []
-        if statements:
-            self.statements = statements
     
     def push(self, statement):
         self.statements.insert(0,statement)
@@ -83,7 +103,7 @@ class Array(BaseBox):
     def add(self, right):
     
         if type(right) is Array:
-            result = Array()
+            result = Array(InnerArray())
             result.values.extend(self.values)
             result.values.extend(right.values)
             return result
@@ -411,6 +431,12 @@ class String(BaseBox):
     def div(self, right):
         raise LogicError("Cannot divide a string")
     
+    def index(self, value):
+        if type(value) is Integer:
+            if value.value >= 0:
+                return String(str(self.value[value.value]))
+        raise LogicError("Cannot index with that")
+    
     def rep(self):
         return 'String("%s")' % self.value
         
@@ -587,7 +613,10 @@ class Not(BaseBox):
         return 'Not(%s)' % (self.value.rep())
     
     def eval(self, env):
-        return Boolean(not self.value.eval(env).value)
+        result = self.value.eval(env)
+        if isinstance(result,Boolean):
+            return Boolean(not result.value)
+        raise LogicError("Cannot 'not' that")
 
 
 class Add(BinaryOp):

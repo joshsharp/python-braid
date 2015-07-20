@@ -1,6 +1,9 @@
 #from __future__ import unicode_literals
 from rply import LexerGenerator
-import re
+try:
+    import rpython.rlib.rsre.rsre_re as re
+except:    
+    import re
 
 lg = LexerGenerator()
 
@@ -71,12 +74,24 @@ lg.ignore('[ \t\r\f\v]+')
 lexer = lg.build()
 
 def lex(source):
-    # explicitly remove comments
-    comments = re.compile(r'#.*(\n|\Z)')
-    source = comments.sub('\n',source)
+
+    comments = r'(#.*)(?:\n|\Z)'
+    multiline = r'([\s]+)(?:\n)'
     
-    # remove multiple newlines
-    multiline = re.compile(r'\n[\s]+')
-    source = multiline.sub('\n',source)
-    
+    comment = re.search(comments,source)
+    while comment is not None:
+        start, end = comment.span(1)
+        assert start >= 0 and end >= 0
+        source = source[0:start] + source[end:] #remove string part that was a comment
+        comment = re.search(comments,source)
+
+    line = re.search(multiline,source)
+    while line is not None:
+        start, end = line.span(1)
+        assert start >= 0 and end >= 0
+        source = source[0:start] + source[end:] #remove string part that was an empty line
+        line = re.search(multiline,source)
+
+    #print "source is now: %s" % source
+
     return lexer.lex(source)
