@@ -2,7 +2,7 @@ import lexer, parser, interpreter
 
 def entry_point(argv):
     
-    interpreter.loop()
+    interpreter.main()
     return 0
 
 def target(*args):

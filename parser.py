@@ -18,16 +18,17 @@ pg = ParserGenerator(
      'PLUS', 'MINUS', 'MUL', 'DIV',
      'IF', 'ELSE', 'COLON', 'END', 'AND', 'OR', 'NOT', 'LET',
      '(', ')', '=', '==', '!=', '>=', '<=', '<', '>', '[', ']', ',',
-     '$end', 'NEWLINE', 'COMMENT',
+     '$end', 'NEWLINE', 'FUNCTION',
      
     ],
     # A list of precedence rules with ascending precedence, to
     # disambiguate ambiguous production rules.
     precedence=[
-        ('left', ['LET']),
+        ('left', ['FUNCTION',]),
+        ('left', ['LET',]),
         ('left', ['=']),
         ('left', ['[',']',',']),
-        ('left', ['IF', 'COLON', 'ELSE', 'END', 'NEWLINE','COMMENT']),
+        ('left', ['IF', 'COLON', 'ELSE', 'END', 'NEWLINE',]),
         ('left', ['AND', 'OR',]),
         ('left', ['NOT',]),
         ('left', ['==', '!=', '>=','>', '<', '<=',]),
@@ -81,14 +82,21 @@ def statement_full(state, p):
 def statement_expr(state, p):
     return p[0]
 
-@pg.production('expression : PRINT ( expression )')
+@pg.production('statement : PRINT ( expression )')
 def statement_print(state, p):    
-    #os.write(1, p[2].eval())
     return Print(p[2])
 
 @pg.production('statement : LET VARIABLE = expression')
 def statement_assignment(state, p):
     return Assignment(Variable(p[1].getstr()),p[3])
+
+@pg.production('statement : FUNCTION VARIABLE ( expressionlist ) COLON NEWLINE block END')
+def statement_func(state, p):
+    return FunctionDeclaration(Variable(p[1].getstr()), Array(p[3]), p[7])
+
+@pg.production('statement : FUNCTION VARIABLE ( ) COLON NEWLINE block END')
+def statement_func_noargs(state, p):
+    return FunctionDeclaration(Variable(p[1].getstr()), Null(), p[6])
 
 @pg.production('const : FLOAT')
 def expression_float(state, p):
@@ -143,7 +151,6 @@ def expression_if_single_line(state, p):
 def expression_if_else_single_line(state, p):
     return If(condition=p[1],body=p[3],else_body=p[6])
 
-@pg.production('expression : IF expression COLON COMMENT block END')
 @pg.production('expression : IF expression COLON NEWLINE block END')
 def expression_if(state, p):
     return If(condition=p[1],body=p[4])

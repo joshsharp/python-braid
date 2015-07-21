@@ -75,6 +75,11 @@ def loop():
                 os.write(2, "ERROR: Cannot perform that operation (%s)\n" % e)
                 continue
 
+            except parser.ImmutableError as e:
+                opening = 0 # reset
+                os.write(2, "ERROR: Cannot reassign that (%s)\n" % e)
+                continue
+            
             except parser.UnexpectedTokenError as e:
                 opening = 0 # reset
                 os.write(2, "ERROR: Unexpected '" + e.token + "'\n")
@@ -83,7 +88,9 @@ def loop():
     except KeyboardInterrupt:
         os.write(1, "\n")
 
+def main():
+    os.write(1, "Interpreter v%s\n" % env.variables['VERSION'].to_string())
+    loop()
 
 if __name__ == '__main__':
-    os.write(1, "Interpreter v%s\n" % env.variables['VERSION'].value)
-    loop()
+    main()

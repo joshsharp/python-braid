@@ -23,10 +23,76 @@ class Program(BaseBox):
     def rep(self):
         result = 'Program('
         for statement in self.statements:
-            result += statement.rep()
-        result += ')'
+            result += '\n\t' + statement.rep()
+        result += '\n)'
         return result
 
+class FunctionDeclaration(BaseBox):
+    
+    def __init__(self, name, args, block):
+        self.name = name
+        self.args = args
+        self.block = block
+        
+    def eval(self, env):
+        if isinstance(self.name,Variable):
+        
+            if env.variables.get(self.name.getname(), None) is None:
+                env.variables[self.name.getname()] = Function(self.name, self.args, self.block)
+                return Null()
+            
+            # otherwise raise error
+            raise ImmutableError(self.name.getname())
+        
+        else:
+            raise LogicError("Cannot assign to this")
+    
+    def rep(self):
+        result = 'FunctionDeclaration %s (' % self.name
+        if isinstance(self.args,Array):
+            for statement in self.args.get_statements():
+                result += ' ' + statement.rep()
+        result += ')'
+        result += '\n\t('
+        if isinstance(self.args,Block):
+            for statement in self.block.get_statements():
+                result += '\n\t' + statement.rep()
+        result += '\n)'
+        return result
+    
+    def to_string(self):
+        return "<function '%s'>" % self.name.getname()
+
+
+class Function(BaseBox):
+    
+    def __init__(self, name, args, block):
+        self.name = name
+        self.args = args
+        self.block = block
+        
+    def eval(self, env):
+        result = Null()
+        if isinstance(self.block,Block):
+            for statement in self.block.get_statements():
+                result = statement.eval(env)
+        return result
+    
+    def rep(self):
+        result = 'Function %s (' % self.name
+        if isinstance(self.args,Array):
+            for statement in self.args.get_statements():
+                result += ' ' + statement.rep()
+        result += ')'
+        result += '\n\t('
+        if isinstance(self.args,Block):
+            for statement in self.block.get_statements():
+                result += '\n\t' + statement.rep()
+        result += '\n)'
+        return result
+    
+    def to_string(self):
+        return "<function '%s'>" % self.name.getname()
 
 class Block(BaseBox):
     
@@ -36,7 +102,10 @@ class Block(BaseBox):
     
     def add_statement(self, statement):
         self.statements.insert(0,statement)
-        
+    
+    def get_statements(self):
+        return self.statements
+    
     def eval(self, env):
         #print "count: %s" % len(self.statements)
         result = None
@@ -48,8 +117,8 @@ class Block(BaseBox):
     def rep(self):
         result = 'Block('
         for statement in self.statements:
-            result += statement.rep()
-        result += ')'
+            result += '\n\t' + statement.rep()
+        result += '\n)'
         return result
 
 class InnerArray(BaseBox):
@@ -86,6 +155,9 @@ class Array(BaseBox):
     def __init__(self, inner):
         self.statements = inner.get_statements()
         self.values = []
+    
+    def get_statements(self):
+        return self.statements
     
     def push(self, statement):
         self.statements.insert(0,statement)
@@ -665,7 +737,7 @@ class Assignment(BinaryOp):
         if isinstance(self.left,Variable):
         
             if env.variables.get(self.left.getname(), None) is None:
-                env.variables[self.left.getname()] = self.right.eval(env)
+                env.variables[self.left.getname()] = self.right
                 return self.right.eval(env)
             
             # otherwise raise error
