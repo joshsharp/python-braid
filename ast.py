@@ -3,6 +3,8 @@ from errors import *
 
 # all token types inherit rply's basebox as rpython needs this
 # these classes represent our Abstract Syntax Tree
+# TODO: deprecate eval() as we move to compiling and then interpreting
+
 class Program(BaseBox):
     
     def __init__(self, statement):
@@ -26,6 +28,10 @@ class Program(BaseBox):
             result += '\n\t' + statement.rep()
         result += '\n)'
         return result
+    
+    def get_statements(self):
+        return self.statements
+
 
 class FunctionDeclaration(BaseBox):
     

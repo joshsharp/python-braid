@@ -1,5 +1,4 @@
-#from __future__ import unicode_literals
-import parser
+import parser, compiler
 import sys, locale, os
 
 class Environment(object):
@@ -60,9 +59,12 @@ def loop():
             try:
                 ast = parser.parse(code, state) # at this point we get AST
                 last = ast # store AST for later inspection
-                result = ast.eval(env)
-                env.variables['it'] = result
-                printresult(result,"= ")
+                #result = ast.eval(env)
+                #env.variables['it'] = result
+                #printresult(result,"= ")
+                bytecode = compiler.compile(ast)
+                print bytecode.dump(True)
+                
                 opening = 0
             
             except parser.UnexpectedEndError as e:
