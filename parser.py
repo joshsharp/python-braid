@@ -240,7 +240,7 @@ def error_handler(state, token):
 parser = pg.build()
 state = ParserState()
 
-def parse(code, state):
+def parse(code, state=state):
     
     result = parser.parse(lexer.lex(code),state)
     return result

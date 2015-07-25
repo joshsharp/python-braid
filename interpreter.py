@@ -1,98 +1,72 @@
-import parser, compiler
-import sys, locale, os
+import parser, compiler, bytecode, objects
 
-class Environment(object):
-    
+class Interpreter(object):
+
     def __init__(self):
-        self.variables = {}
+        self.context = compiler.Context()
+        self.variables = [objects.Null()] * 255
 
-
-env = Environment()
-env.variables['VERSION'] = parser.String('0.0.2') # special value
-
-
-def readline(prompt=None):
-    
-    if prompt:
-        os.write(1,prompt)
+    def interpret(self, ast):
+        byte_code = compiler.compile(ast, self.context)
+        print byte_code.dump(True)
         
-    res = ''
-    while True:
-        buf = os.read(0, 16)
-        if not buf: return res
-        res += buf
-        if res[-1] == '\n': return res[:-1]
-
-
-def printresult(result, prefix):
-    #print type(result)
-    print prefix + result.to_string()
-   
-def loop():
-    state = parser.state
-    last = parser.Null()
-    
-    opening = 0
-    code = ''
-    
-    try:
-        while True:
+        pc = 0 # program counter
+        stack = []
+        
+        while pc < len(byte_code.instructions):
             
-            # loop forever until KeyboardInterrupt or other break
-            if opening > 0:
-                code += '\n' + readline('... ')
-            else:                
-                code = readline('>>> ') #.decode(sys.stdin.encoding or locale.getpreferredencoding(True) or 'ascii')
-            if code.strip() == '':
-                continue
-            if code.strip() == ':a':
-                print last.rep()
-                continue
-            if code.strip() == ':e':
-                for key, var in env.variables.iteritems():
-                    print str(key) + ': ' + var.to_string()
-                continue
-            if code.strip() == ':q':
-                os.write(1, "\n")
-                break
+            # the type of instruction
+            opcode = byte_code.instructions[pc]
+            # the optional arg
+            arg = byte_code.instructions[pc + 1]
+            # then increment
+            pc += 2
             
-            try:
-                ast = parser.parse(code, state) # at this point we get AST
-                last = ast # store AST for later inspection
-                #result = ast.eval(env)
-                #env.variables['it'] = result
-                #printresult(result,"= ")
-                bytecode = compiler.compile(ast)
-                print bytecode.dump(True)
-                
-                opening = 0
+            if opcode == bytecode.LOAD_CONST:
+                # grab a value from our constants and add to stack
+                value = byte_code.constants[arg]
+                stack.append(value)
             
-            except parser.UnexpectedEndError as e:
-                # just keep ignoring this till we break or complete
-                opening += 1
-                continue
+            elif opcode == bytecode.LOAD_VARIABLE:
+                value = self.variables[arg]
+                stack.append(value)
             
-            except parser.LogicError as e:
-                opening = 0 # reset
-                os.write(2, "ERROR: Cannot perform that operation (%s)\n" % e)
-                continue
-
-            except parser.ImmutableError as e:
-                opening = 0 # reset
-                os.write(2, "ERROR: Cannot reassign that (%s)\n" % e)
-                continue
+            elif opcode == bytecode.STORE_VARIABLE:
+                value = stack.pop()
+                self.variables[arg] = value
+                stack.append(value)
             
-            except parser.UnexpectedTokenError as e:
-                opening = 0 # reset
-                os.write(2, "ERROR: Unexpected '" + e.token + "'\n")
-                continue
+            elif opcode == bytecode.PRINT:
+                value = stack.pop()
+                print value.to_string()
+                stack.append(objects.Null())
+            
+            elif opcode == bytecode.BINARY_ADD:
+                right = stack.pop()
+                left = stack.pop()
+                result = left.add(right)
+                stack.append(result)
+            
+            elif opcode == bytecode.BINARY_SUB:
+                right = stack.pop()
+                left = stack.pop()
+                result = left.sub(right)
+                stack.append(result)
+            
+            elif opcode == bytecode.RETURN:
+                if arg > 0:
+                    if len(stack) > 0:
+                        result = stack.pop()
+                        return result
+                    return objects.Null()
+            
+            elif opcode == bytecode.JUMP_IF_NOT_ZERO:
+                val = stack.pop()
+                if val.equals(objects.Boolean(True)):
+                    pc = arg
+                    
+            elif opcode == bytecode.JUMP_IF_ZERO:
+                val = stack.pop()
+                if not val.equals(objects.Boolean(True)):
+                    pc = arg
 
-    except KeyboardInterrupt:
-        os.write(1, "\n")
-
-def main():
-    os.write(1, "Interpreter v%s\n" % env.variables['VERSION'].to_string())
-    loop()
-
-if __name__ == '__main__':
-    main()

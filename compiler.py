@@ -243,13 +243,14 @@ def compile_any(context, ast):
         raise Exception("Cannot compile %s - cannot find %s" % (typename, funcname))
 
 
-def compile(ast):
+def compile(ast, context=None):
     """
     Begin here.
     """
-    context = Context()
+    if context is None:
+        context = Context()
     
     compile_any(context, ast)
-    context.emit(bytecode.RETURN,0)
+    context.emit(bytecode.RETURN,1)
     
     return context.build()
