@@ -1,4 +1,4 @@
-import bytecode, objects
+import bytecode, objects, errors
 import ast as ast_objects
 
 class Context(object):
@@ -6,9 +6,8 @@ class Context(object):
     
     def __init__(self):
         self.instructions = []
-        self.constants = []
+        self.constants = {}
         self.variables = {}
-        self.functions = {}
         
         self.NULL = self.register_constant(objects.Null())
         self.TRUE = self.register_constant(objects.Boolean(True))
@@ -19,17 +18,22 @@ class Context(object):
         self.instructions.append(arg)
 
     def register_variable(self, name):
-        self.variables[name] = len(self.variables)
-        return len(self.variables) - 1
+        self.variables[name] = objects.Null()
+        return name
 
-    def register_function(self, name, index, arg_count):
-        self.functions[name] = (index, arg_count)
+    def register_constant(self, constant, name=None):
+        if not name:
+            name = len(self.constants)
+        self.constants[name] = constant        
+        return name
 
-    def register_constant(self, constant):
-        self.constants.append(constant)
-        return len(self.constants) - 1
-
-    def build(self, arguments=[], name="<input>"):
+    def build(self, arguments=None, name="<input>"):
+        
+        if type(arguments) is ast_objects.Null:
+            arguments = []
+        elif type(arguments) is ast_objects.Array:
+            arguments = arguments.statements
+        
         return bytecode.Bytecode(
             instructions=self.instructions,
             name=name,
@@ -50,12 +54,13 @@ def compile_functiondeclaration(context, ast):
     # to be a 'parent' instead of merging them
     # then work up through them as needed
     ctx = Context()
-    ctx.constants = context.constants
-    ctx.variables = context.variables
-    ctx.functions = context.functions
-    
-    arg_count = 0
-    
+    for k, v in context.constants.iteritems():
+        ctx.constants[k] = v
+    for k, v in context.variables.iteritems():
+        ctx.variables[k] = v
+
+    #arg_count = 0
+    #
     if type(ast.args) is not ast_objects.Null:
         
         arg_count = len(ast.args.get_statements())
@@ -63,12 +68,12 @@ def compile_functiondeclaration(context, ast):
         for arg in ast.args.get_statements():
             # TODO: need a way to say these names are to be
             # filled by literal arguments when this is called.
-            pass
+            ctx.variables[arg.name] = objects.Null()
         
     compile_block(ctx,ast.block)
     
-    fn = context.register_constant(ctx.build(name=ast.name.name))
-    context.register_function(ast.name.name, fn, arg_count)
+    fn = ctx.build(ast.args, name=ast.name.name)
+    context.register_constant(fn, ast.name.name)
     context.emit(bytecode.LOAD_CONST,0)
 
 
@@ -80,9 +85,10 @@ def compile_function(context, ast):
         for arg in ast.args.statements:
             compile_any(context, arg)
     
-    index = context.functions.get(ast.name.name, None)
-    if index:
-        context.emit(bytecode.CALL, index)
+    #print "calling %s" % ast.name.name
+    fn = context.constants.get(ast.name.name, None)
+    if fn:
+        context.emit(bytecode.CALL, ast.name.name)
     else:
         raise Exception("function does not exist")
 
@@ -136,9 +142,9 @@ def compile_string(context, ast):
 
 
 def compile_variable(context, ast):
-    index = context.variables.get(ast.name,bytecode.NO_ARG)
-    if index > bytecode.NO_ARG:
-        context.emit(bytecode.LOAD_VARIABLE,index)
+    val = context.variables.get(ast.name,None)
+    if val is not None:
+        context.emit(bytecode.LOAD_VARIABLE,ast.name)
     else:
         raise Exception("Attempt to use undefined variable %s" % ast.name)
 
@@ -259,6 +265,11 @@ def compile_div(context, ast):
 def compile_assignment(context, ast):
     index = context.register_variable(ast.left.name)
     compile_any(context, ast.right)
+    context.emit(bytecode.STORE_VARIABLE, index)
+
+
+def compile_argument(context, name):
+    index = context.register_variable(name)
     context.emit(bytecode.STORE_VARIABLE, index)
 
 

@@ -90,7 +90,7 @@ def statement_print(state, p):
 def statement_assignment(state, p):
     return Assignment(Variable(p[1].getstr()),p[3])
 
-@pg.production('statement : FUNCTION VARIABLE ( expressionlist ) COLON NEWLINE block END')
+@pg.production('statement : FUNCTION VARIABLE ( arglist ) COLON NEWLINE block END')
 def statement_func(state, p):
     return FunctionDeclaration(Variable(p[1].getstr()), Array(p[3]), p[7])
 
@@ -142,12 +142,12 @@ def arglist(state, p):
 @pg.production('arglist : VARIABLE')
 @pg.production('arglist : VARIABLE ,')
 def arglist_single(state, p):
-    return InnerArray([p[0]])
+    return InnerArray([Variable(p[0].getstr())])
 
 @pg.production('arglist : VARIABLE , arglist')
 def arglist(state, p):
     # list should already be an InnerArray
-    p[2].push(p[0])
+    p[2].push(Variable(p[0].getstr()))
     return p[2]
 
 @pg.production('expression : expression [ expression ]')
@@ -180,7 +180,7 @@ def expression_call_noargs(state, p):
     # cannot return the value of a variable if it isn't yet defined
     return Function(Variable(p[0].getstr()),InnerArray())
 
-@pg.production('expression : VARIABLE ( arglist )')
+@pg.production('expression : VARIABLE ( expressionlist )')
 def expression_call_args(state, p):
     # cannot return the value of a variable if it isn't yet defined
     return Function(Variable(p[0].getstr()),p[2])

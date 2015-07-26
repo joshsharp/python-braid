@@ -1,4 +1,5 @@
 from rply.token import BaseBox
+from errors import *
 
 class Null(BaseBox):
     
@@ -17,7 +18,12 @@ class Function(BaseBox):
         self.name = name
         self.args = args
         self.block = block
-        
+    
+    def to_string(self):
+        return "(function)"
+
+    def dump(self):
+        return "function"
 
 class Boolean(BaseBox):
     
@@ -74,7 +80,7 @@ class Boolean(BaseBox):
         return 0
     
     def dump(self):
-        return str(self.value).lower()
+        return self.to_string()
 
 class Integer(BaseBox):
     

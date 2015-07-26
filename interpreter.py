@@ -1,21 +1,25 @@
-import parser, compiler, bytecode, objects
+import parser, compiler, bytecode, objects, errors
 
 class Interpreter(object):
 
     def __init__(self):
         self.context = compiler.Context()
-        self.variables = [objects.Null()] * 255
-
-    def interpret(self, ast):
+        
+    def compile_interpret(self, ast):
         byte_code = compiler.compile(ast, self.context)
         print byte_code.dump(True)
     
-        return self._interpret(byte_code)
+        return self.interpret(byte_code)
     
-    def _interpret(self, byte_code, args=[]):
+    def interpret(self, byte_code, args=[]):
         
         pc = 0 # program counter
         stack = []
+        
+        assert(len(args) == len(byte_code.arguments))
+        
+        for arg, value in zip(byte_code.arguments,args):
+            byte_code.variables[arg.name] = value
         
         while pc < len(byte_code.instructions):
             
@@ -32,12 +36,12 @@ class Interpreter(object):
                 stack.append(value)
             
             elif opcode == bytecode.LOAD_VARIABLE:
-                value = self.variables[arg]
+                value = byte_code.variables[arg]
                 stack.append(value)
             
             elif opcode == bytecode.STORE_VARIABLE:
                 value = stack.pop()
-                self.variables[arg] = value
+                byte_code.variables[arg] = value
                 stack.append(value)
             
             elif opcode == bytecode.PRINT:
@@ -84,11 +88,14 @@ class Interpreter(object):
                 pc = arg
 
             elif opcode == bytecode.CALL:
-                func, arg_count = byte_code.constants[arg]
+                func = byte_code.constants[arg]
                 args = []
-                for i in xrange(0,arg_count):
+                if len(func.arguments) > len(stack):
+                    raise Exception("Not enough arguments")
+                
+                for i in range(0,len(func.arguments)):
                     args.append(stack.pop())
-                stack.append(self._interpret(func))
+                stack.append(self.interpret(func,args))
 
         return stack[len(stack) - 1]
         

@@ -32,7 +32,7 @@ class Bytecode(object):
     def __init__(self, instructions, arguments, constants, variables, name):
         self.instructions = instructions
         self.name = name
-        self.arguments = arguments
+        self.arguments = arguments or []
         self.constants = constants
         self.variables = variables
 
@@ -49,7 +49,17 @@ class Bytecode(object):
             yield (offset, byte_code, arg)
             offset += 2
 
+    def to_string(self):
+        return 'bytecode'
+
     def dump(self, pretty=True, indent=0):
+        for k, v in self.constants.iteritems():
+            print "%s: %s" % (k, v.to_string())
+        
+        for k, v in self.variables.iteritems():
+            print "%s: %s" % (k, v.to_string())
+        
+        
         lines = []
 
         for offset, byte_code, arg in self:
@@ -67,10 +77,10 @@ class Bytecode(object):
             line = "%s%s %s %s" % (' ' * indent, str(offset), name, str_arg)
             if pretty:
                 if byte_code in (LOAD_CONST, CALL):
-                    if type(self.constants[arg]) is Bytecode:
-                        line += " => " + self.constants[arg].dump(True, indent=indent+2)
+                    if type(self.constants.get(arg,None)) is Bytecode:
+                        line += " => " + self.constants.get(arg).dump(True, indent=indent+2)
                     else:
-                        line += " => " + self.constants[arg].dump()
+                        line += " => " + self.constants.get(arg).dump()
                 elif byte_code in (STORE_VARIABLE, LOAD_VARIABLE):
                     for name, index in self.variables.items():
                         if index == arg:

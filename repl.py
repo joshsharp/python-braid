@@ -1,4 +1,4 @@
-import parser, compiler, interpreter
+import parser, compiler, interpreter, errors
 import sys, locale, os
 
 
@@ -55,7 +55,7 @@ def loop():
                 #result = ast.eval(env)
                 #env.variables['it'] = result
                 
-                result = intr.interpret(ast)
+                result = intr.compile_interpret(ast)
                 printresult(result,"= ")
                 
                 intr.context.instructions = []
@@ -79,6 +79,11 @@ def loop():
             except parser.UnexpectedTokenError as e:
                 opening = 0 # reset
                 os.write(2, "ERROR: Unexpected '" + e.token + "'\n")
+                continue
+
+            except Exception as e:
+                opening = 0 # reset
+                os.write(2, "ERROR: %s\n" % str(e))
                 continue
 
     except KeyboardInterrupt:
