@@ -1,8 +1,8 @@
-import lexer, parser, interpreter
+import lexer, parser, interpreter, repl
 
 def entry_point(argv):
     
-    interpreter.main()
+    repl.main()
     return 0
 
 def target(*args):

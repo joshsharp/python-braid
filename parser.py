@@ -134,8 +134,19 @@ def expressionlist_single(state, p):
     return InnerArray([p[0]])
 
 @pg.production('expressionlist : expression , expressionlist')
-def expressionlist(state, p):
+def arglist(state, p):
     # expressionlist should already be an InnerArray
+    p[2].push(p[0])
+    return p[2]
+
+@pg.production('arglist : VARIABLE')
+@pg.production('arglist : VARIABLE ,')
+def arglist_single(state, p):
+    return InnerArray([p[0]])
+
+@pg.production('arglist : VARIABLE , arglist')
+def arglist(state, p):
+    # list should already be an InnerArray
     p[2].push(p[0])
     return p[2]
 
@@ -163,6 +174,16 @@ def expression_if_else(state, p):
 def expression_variable(state, p):
     # cannot return the value of a variable if it isn't yet defined
     return Variable(p[0].getstr())
+
+@pg.production('expression : VARIABLE ( )')
+def expression_call_noargs(state, p):
+    # cannot return the value of a variable if it isn't yet defined
+    return Function(Variable(p[0].getstr()),InnerArray())
+
+@pg.production('expression : VARIABLE ( arglist )')
+def expression_call_args(state, p):
+    # cannot return the value of a variable if it isn't yet defined
+    return Function(Variable(p[0].getstr()),p[2])
 
 @pg.production('expression : NOT expression ')
 def expression_not(state, p):

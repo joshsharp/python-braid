@@ -9,6 +9,10 @@ class Interpreter(object):
     def interpret(self, ast):
         byte_code = compiler.compile(ast, self.context)
         print byte_code.dump(True)
+    
+        return self._interpret(byte_code)
+    
+    def _interpret(self, byte_code, args=[]):
         
         pc = 0 # program counter
         stack = []
@@ -53,6 +57,12 @@ class Interpreter(object):
                 result = left.sub(right)
                 stack.append(result)
             
+            elif opcode == bytecode.BINARY_EQ:
+                right = stack.pop()
+                left = stack.pop()
+                result = left.equals(right)
+                stack.append(result)
+            
             elif opcode == bytecode.RETURN:
                 if arg > 0:
                     if len(stack) > 0:
@@ -62,11 +72,24 @@ class Interpreter(object):
             
             elif opcode == bytecode.JUMP_IF_NOT_ZERO:
                 val = stack.pop()
-                if val.equals(objects.Boolean(True)):
+                if val.equals(objects.Boolean(True)).value:
                     pc = arg
                     
             elif opcode == bytecode.JUMP_IF_ZERO:
                 val = stack.pop()
-                if not val.equals(objects.Boolean(True)):
+                if not val.equals(objects.Boolean(True)).value:
                     pc = arg
+
+            elif opcode == bytecode.JUMP:
+                pc = arg
+
+            elif opcode == bytecode.CALL:
+                func, arg_count = byte_code.constants[arg]
+                args = []
+                for i in xrange(0,arg_count):
+                    args.append(stack.pop())
+                stack.append(self._interpret(func))
+
+        return stack[len(stack) - 1]
+        
 

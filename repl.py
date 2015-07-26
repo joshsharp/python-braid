@@ -17,8 +17,10 @@ def readline(prompt=None):
 
 def printresult(result, prefix):
     #print type(result)
-    print prefix + result.to_string()
-   
+    if result is not None:
+        print prefix + result.to_string()
+    else:
+        print prefix
 def loop():
     intr = interpreter.Interpreter()
     last = parser.Null()

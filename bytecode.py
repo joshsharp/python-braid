@@ -49,7 +49,7 @@ class Bytecode(object):
             yield (offset, byte_code, arg)
             offset += 2
 
-    def dump(self, pretty=True):
+    def dump(self, pretty=True, indent=0):
         lines = []
 
         for offset, byte_code, arg in self:
@@ -64,10 +64,13 @@ class Bytecode(object):
             if arg != NO_ARG:
                 str_arg = "%s" % arg
 
-            line = "%s %s %s" % (str(offset), name, str_arg)
+            line = "%s%s %s %s" % (' ' * indent, str(offset), name, str_arg)
             if pretty:
                 if byte_code in (LOAD_CONST, CALL):
-                    line += " => " + self.constants[arg].dump()
+                    if type(self.constants[arg]) is Bytecode:
+                        line += " => " + self.constants[arg].dump(True, indent=indent+2)
+                    else:
+                        line += " => " + self.constants[arg].dump()
                 elif byte_code in (STORE_VARIABLE, LOAD_VARIABLE):
                     for name, index in self.variables.items():
                         if index == arg:

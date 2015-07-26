@@ -11,14 +11,19 @@ class Null(BaseBox):
     def dump(self):
         return "null"
 
+class Function(BaseBox):
+    
+    def __init__(self, name, args, block):
+        self.name = name
+        self.args = args
+        self.block = block
+        
+
 class Boolean(BaseBox):
     
     def __init__(self, value):
         self.value = bool(value)
 
-    def to_string(self):
-        return str(self.value).lower()
-    
     def equals(self, right):
         if type(right) is Boolean:
             return Boolean(self.value == right.value)
@@ -69,7 +74,7 @@ class Boolean(BaseBox):
         return 0
     
     def dump(self):
-        return str(self.value)
+        return str(self.value).lower()
 
 class Integer(BaseBox):
     

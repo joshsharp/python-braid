@@ -1,4 +1,5 @@
 import bytecode, objects
+import ast as ast_objects
 
 class Context(object):
     """Shamelessly plundered from Cycy"""
@@ -7,11 +8,12 @@ class Context(object):
         self.instructions = []
         self.constants = []
         self.variables = {}
+        self.functions = {}
         
         self.NULL = self.register_constant(objects.Null())
-        self.FALSE = self.register_constant(objects.Boolean(False))
         self.TRUE = self.register_constant(objects.Boolean(True))
-
+        self.FALSE = self.register_constant(objects.Boolean(False))
+        
     def emit(self, byte_code, arg=bytecode.NO_ARG):
         self.instructions.append(byte_code)
         self.instructions.append(arg)
@@ -19,6 +21,9 @@ class Context(object):
     def register_variable(self, name):
         self.variables[name] = len(self.variables)
         return len(self.variables) - 1
+
+    def register_function(self, name, index, arg_count):
+        self.functions[name] = (index, arg_count)
 
     def register_constant(self, constant):
         self.constants.append(constant)
@@ -40,15 +45,46 @@ def compile_program(context, ast):
 
 
 def compile_functiondeclaration(context, ast):
-    for arg in ast.args.get_statements():
-        compile_any(context,arg)
+    # new context, but need access to outer context
+    # TODO: this seems wrong, maybe we need the outer context
+    # to be a 'parent' instead of merging them
+    # then work up through them as needed
+    ctx = Context()
+    ctx.constants = context.constants
+    ctx.variables = context.variables
+    ctx.functions = context.functions
     
-    compile_block(context,ast.block)
+    arg_count = 0
+    
+    if type(ast.args) is not ast_objects.Null:
+        
+        arg_count = len(ast.args.get_statements())
+        
+        for arg in ast.args.get_statements():
+            # TODO: need a way to say these names are to be
+            # filled by literal arguments when this is called.
+            pass
+        
+    compile_block(ctx,ast.block)
+    
+    fn = context.register_constant(ctx.build(name=ast.name.name))
+    context.register_function(ast.name.name, fn, arg_count)
+    context.emit(bytecode.LOAD_CONST,0)
 
 
 def compile_function(context, ast):
-    # TODO: Work out if this the same as a function call?
-    pass
+    # this is a call really
+    
+    if type(ast.args) is ast_objects.InnerArray:
+    
+        for arg in ast.args.statements:
+            compile_any(context, arg)
+    
+    index = context.functions.get(ast.name.name, None)
+    if index:
+        context.emit(bytecode.CALL, index)
+    else:
+        raise Exception("function does not exist")
 
 
 def compile_block(context, ast):

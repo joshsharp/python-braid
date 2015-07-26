@@ -41,17 +41,7 @@ class FunctionDeclaration(BaseBox):
         self.block = block
         
     def eval(self, env):
-        if isinstance(self.name,Variable):
-        
-            if env.variables.get(self.name.getname(), None) is None:
-                env.variables[self.name.getname()] = Function(self.name, self.args, self.block)
-                return Null()
-            
-            # otherwise raise error
-            raise ImmutableError(self.name.getname())
-        
-        else:
-            raise LogicError("Cannot assign to this")
+        raise LogicError("Cannot assign to this")
     
     def rep(self):
         result = 'FunctionDeclaration %s (' % self.name
@@ -72,16 +62,12 @@ class FunctionDeclaration(BaseBox):
 
 class Function(BaseBox):
     
-    def __init__(self, name, args, block):
+    def __init__(self, name, args):
         self.name = name
         self.args = args
-        self.block = block
         
     def eval(self, env):
         result = Null()
-        if isinstance(self.block,Block):
-            for statement in self.block.get_statements():
-                result = statement.eval(env)
         return result
     
     def rep(self):
@@ -90,11 +76,6 @@ class Function(BaseBox):
             for statement in self.args.get_statements():
                 result += ' ' + statement.rep()
         result += ')'
-        result += '\n\t('
-        if isinstance(self.args,Block):
-            for statement in self.block.get_statements():
-                result += '\n\t' + statement.rep()
-        result += '\n)'
         return result
     
     def to_string(self):
