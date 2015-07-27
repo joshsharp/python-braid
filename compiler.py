@@ -167,6 +167,10 @@ def compile_if(context, ast):
     # jump to end
     # false block
     
+    # TODO: let jump target labels, not values! store the name of the jump
+    # in a constant and then reference that constant name, which can contain the
+    # jump position and be updated if need be
+    
     context.emit(bytecode.JUMP_IF_ZERO,0)
     # make a note of the instruction we'll have to change
     false_jump = len(context.instructions) - 1
@@ -186,50 +190,50 @@ def compile_if(context, ast):
 
 
 def compile_equal(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_EQ,bytecode.NO_ARG)
 
 
 def compile_notequal(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_NEQ,bytecode.NO_ARG)
 
 
 def compile_greaterthan(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_GT,bytecode.NO_ARG)
 
 
 def compile_greaterthanequal(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_GTE,bytecode.NO_ARG)
 
 
 def compile_lessthan(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_LT,bytecode.NO_ARG)
 
 
 def compile_lessthanequal(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_LTE,bytecode.NO_ARG)
 
 
 def compile_and(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_AND,bytecode.NO_ARG)
 
 
 def compile_or(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_OR,bytecode.NO_ARG)
 
 
@@ -239,26 +243,26 @@ def compile_not(context, ast):
 
 
 def compile_add(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_ADD,bytecode.NO_ARG)
 
 
 def compile_sub(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_SUB,bytecode.NO_ARG)
 
 
 def compile_mul(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_MUL,bytecode.NO_ARG)
 
 
 def compile_div(context, ast):
-    compile_any(context, ast.right)
     compile_any(context, ast.left)
+    compile_any(context, ast.right)
     context.emit(bytecode.BINARY_DIV,bytecode.NO_ARG)
 
 

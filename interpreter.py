@@ -67,6 +67,30 @@ class Interpreter(object):
                 result = left.equals(right)
                 stack.append(result)
             
+            elif opcode == bytecode.BINARY_GT:
+                right = stack.pop()
+                left = stack.pop()
+                result = left.gt(right)
+                stack.append(result)
+            
+            elif opcode == bytecode.BINARY_GTE:
+                right = stack.pop()
+                left = stack.pop()
+                result = left.gte(right)
+                stack.append(result)
+            
+            elif opcode == bytecode.BINARY_LT:
+                right = stack.pop()
+                left = stack.pop()
+                result = left.lt(right)
+                stack.append(result)
+            
+            elif opcode == bytecode.BINARY_LTE:
+                right = stack.pop()
+                left = stack.pop()
+                result = left.lte(right)
+                stack.append(result)
+            
             elif opcode == bytecode.RETURN:
                 if arg > 0:
                     if len(stack) > 0:
