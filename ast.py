@@ -257,11 +257,11 @@ class String(BaseBox):
     
 class Variable(BaseBox):
     def __init__(self, name):
-        self.name = name
+        self.name = str(name)
         self.value = None
 
     def getname(self):
-        return self.name
+        return str(self.name)
 
     def eval(self, env):
         if env.variables.get(self.name, None) is not None:

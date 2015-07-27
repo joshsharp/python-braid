@@ -92,11 +92,11 @@ def statement_assignment(state, p):
 
 @pg.production('statement : FUNCTION VARIABLE ( arglist ) COLON NEWLINE block END')
 def statement_func(state, p):
-    return FunctionDeclaration(Variable(p[1].getstr()), Array(p[3]), p[7])
+    return FunctionDeclaration(p[1].getstr(), Array(p[3]), p[7])
 
 @pg.production('statement : FUNCTION VARIABLE ( ) COLON NEWLINE block END')
 def statement_func_noargs(state, p):
-    return FunctionDeclaration(Variable(p[1].getstr()), Null(), p[6])
+    return FunctionDeclaration(p[1].getstr(), Null(), p[6])
 
 @pg.production('const : FLOAT')
 def expression_float(state, p):

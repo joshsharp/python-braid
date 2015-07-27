@@ -20,10 +20,12 @@ BINARY_GTE          = 16
 BINARY_AND          = 17
 BINARY_OR           = 18
 NOT                 = 19
+BINARY_MUL          = 20
+BINARY_DIV          = 21
 INDEX               = 50
 CALL                = 90
 
-NO_ARG              = -255
+NO_ARG              = " "
 
 
 class Bytecode(object):

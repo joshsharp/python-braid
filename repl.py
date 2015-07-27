@@ -41,10 +41,6 @@ def loop():
             if code.strip() == ':a':
                 print last.rep()
                 continue
-            if code.strip() == ':e':
-                for key, var in env.variables.iteritems():
-                    print str(key) + ': ' + var.to_string()
-                continue
             if code.strip() == ':q':
                 os.write(1, "\n")
                 break

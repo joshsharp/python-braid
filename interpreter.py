@@ -92,7 +92,7 @@ class Interpreter(object):
                 stack.append(result)
             
             elif opcode == bytecode.RETURN:
-                if arg > 0:
+                if arg == "1":
                     if len(stack) > 0:
                         result = stack.pop()
                         return result
