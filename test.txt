@@ -1,3 +1,6 @@
+let ooh = 5
+let eer = "hi"
+
 func a(hi):
   hi
 end

@@ -57,7 +57,7 @@ class FunctionDeclaration(BaseBox):
         return result
     
     def to_string(self):
-        return "<function '%s'>" % self.name.getname()
+        return "<function '%s'>" % self.name
 
 
 class Function(BaseBox):
@@ -79,7 +79,7 @@ class Function(BaseBox):
         return result
     
     def to_string(self):
-        return "<function '%s'>" % self.name.getname()
+        return "<function '%s'>" % self.name
 
 class Block(BaseBox):
     
@@ -195,11 +195,6 @@ class Null(BaseBox):
 
     def rep(self):
         return 'Null()'
-
-    def equals(self, right):
-        if type(right) is Null:
-            return Boolean(True)
-        return Boolean(False)
     
 
 class Boolean(BaseBox):
@@ -272,21 +267,6 @@ class Variable(BaseBox):
     def to_string(self):
         return str(self.name)
     
-    def equals(self, right):
-        return self.value.equals(right)
-    
-    def add(self, right):
-        return self.value.add(right)
-    
-    def sub(self, right):
-        return self.value.sub(right)
-    
-    def mul(self, right):
-        return self.value.mul(right)
-    
-    def div(self, right):
-        return self.value.div(right)
-
     def rep(self):
         return 'Variable(%s)' % self.name
         

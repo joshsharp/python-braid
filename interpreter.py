@@ -15,20 +15,22 @@ class Interpreter(object):
         
         pc = 0 # program counter
         stack = []
+        variables = [objects.Null()] * 255
         
         assert(len(args) == len(byte_code.arguments))
         
-        for arg, value in zip(byte_code.arguments,args):
-            byte_code.variables[arg.name] = value
+        #for index, value in zip(byte_code.arguments,args):
+        #    byte_code.variables[index] = value
+            
+        for index in xrange(0,len(args)):
+            byte_code.variables[index] = args[index]
         
         while pc < len(byte_code.instructions):
             
-            # the type of instruction
-            opcode = byte_code.instructions[pc]
-            # the optional arg
-            arg = byte_code.instructions[pc + 1]
+            # the type of instruction and arg (a tuple)
+            opcode, arg = byte_code.instructions[pc]
             # then increment
-            pc += 2
+            pc += 1
             
             if opcode == bytecode.LOAD_CONST:
                 # grab a value from our constants and add to stack
@@ -36,12 +38,15 @@ class Interpreter(object):
                 stack.append(value)
             
             elif opcode == bytecode.LOAD_VARIABLE:
-                value = byte_code.variables[arg]
-                stack.append(value)
+                var = byte_code.variables[arg]
+                assert(isinstance(var,objects.Variable))
+                stack.append(var.value)
             
             elif opcode == bytecode.STORE_VARIABLE:
                 value = stack.pop()
-                byte_code.variables[arg] = value
+                oldvar = byte_code.variables[arg]
+                assert(isinstance(oldvar,objects.Variable))
+                byte_code.variables[arg] = objects.Variable(oldvar.name,value)
                 stack.append(value)
             
             elif opcode == bytecode.PRINT:
@@ -92,7 +97,7 @@ class Interpreter(object):
                 stack.append(result)
             
             elif opcode == bytecode.RETURN:
-                if arg == "1":
+                if arg == 1:
                     if len(stack) > 0:
                         result = stack.pop()
                         return result
@@ -100,19 +105,26 @@ class Interpreter(object):
             
             elif opcode == bytecode.JUMP_IF_NOT_ZERO:
                 val = stack.pop()
-                if val.equals(objects.Boolean(True)).value:
+                assert(isinstance(val,objects.BaseBox))
+                
+                result = val.equals(objects.Boolean(True))
+                assert(isinstance(result,objects.Boolean))
+                if result.value:
                     pc = arg
                     
             elif opcode == bytecode.JUMP_IF_ZERO:
                 val = stack.pop()
-                if not val.equals(objects.Boolean(True)).value:
+                assert(isinstance(val,objects.BaseBox))
+                result = val.equals(objects.Boolean(True))
+                assert(isinstance(result,objects.Boolean))
+                if not result.value:
                     pc = arg
 
             elif opcode == bytecode.JUMP:
                 pc = arg
 
             elif opcode == bytecode.CALL:
-                func = byte_code.constants[arg]
+                func = byte_code.functions[arg]
                 args = []
                 if len(func.arguments) > len(stack):
                     raise Exception("Not enough arguments")

@@ -178,12 +178,12 @@ def expression_variable(state, p):
 @pg.production('expression : VARIABLE ( )')
 def expression_call_noargs(state, p):
     # cannot return the value of a variable if it isn't yet defined
-    return Function(Variable(p[0].getstr()),InnerArray())
+    return Function(p[0].getstr(),InnerArray())
 
 @pg.production('expression : VARIABLE ( expressionlist )')
 def expression_call_args(state, p):
     # cannot return the value of a variable if it isn't yet defined
-    return Function(Variable(p[0].getstr()),p[2])
+    return Function(p[0].getstr(),p[2])
 
 @pg.production('expression : NOT expression ')
 def expression_not(state, p):

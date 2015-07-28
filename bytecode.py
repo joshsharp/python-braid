@@ -25,18 +25,19 @@ BINARY_DIV          = 21
 INDEX               = 50
 CALL                = 90
 
-NO_ARG              = " "
+NO_ARG              = -255
 
 
 class Bytecode(object):
     """Also plundered from Cycy"""
     
-    def __init__(self, instructions, arguments, constants, variables, name):
+    def __init__(self, instructions, arguments, constants, variables, functions, name):
         self.instructions = instructions
         self.name = name
         self.arguments = arguments or []
         self.constants = constants
         self.variables = variables
+        self.functions = functions
 
     def __iter__(self):
         """Yield (offset, byte_code, arg) tuples.
@@ -45,21 +46,20 @@ class Bytecode(object):
         """
         offset = 0
         while offset < len(self.instructions):
-            byte_code = self.instructions[offset]
-            arg = self.instructions[offset + 1]
-
+            byte_code, arg = self.instructions[offset]
+            
             yield (offset, byte_code, arg)
-            offset += 2
+            offset += 1
 
     def to_string(self):
         return 'bytecode'
 
     def dump(self, pretty=True, indent=0):
-        for k, v in self.constants.iteritems():
-            print "%s: %s" % (k, v.to_string())
+        for i, v in enumerate(self.constants):
+            print "%s: %s" % (i, v.to_string())
         
         for k, v in self.variables.iteritems():
-            print "%s: %s" % (k, v.to_string())
+            print "%s: %s" % (k, v)
         
         
         lines = []
@@ -68,26 +68,17 @@ class Bytecode(object):
 
             name = byte_code
 
-            for key, val in globals().iteritems():
-                if val == byte_code:
-                    name = key
-                
             str_arg = ""
             if arg != NO_ARG:
                 str_arg = "%s" % arg
 
             line = "%s%s %s %s" % (' ' * indent, str(offset), name, str_arg)
             if pretty:
-                if byte_code in (LOAD_CONST, CALL):
-                    if type(self.constants.get(arg,None)) is Bytecode:
-                        line += " => " + self.constants.get(arg).dump(True, indent=indent+2)
-                    else:
-                        line += " => " + self.constants.get(arg).dump()
-                elif byte_code in (STORE_VARIABLE, LOAD_VARIABLE):
-                    for name, index in self.variables.items():
-                        if index == arg:
-                            line += " => " + name
-                            break
+                if byte_code == LOAD_CONST:
+                    line += " => " + self.constants[arg].dump()
+                elif byte_code == CALL:
+                    line += " => \n" + self.functions[arg].dump(True, indent=indent+2)
+                        
                 elif byte_code == RETURN:
                     if arg:
                         line += " (top of stack)"

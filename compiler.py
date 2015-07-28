@@ -6,8 +6,9 @@ class Context(object):
     
     def __init__(self):
         self.instructions = []
-        self.constants = {}
+        self.constants = []
         self.variables = {}
+        self.functions = {}
         
         self.NULL = self.register_constant(objects.Null())
         self.TRUE = self.register_constant(objects.Boolean(True))
@@ -15,34 +16,37 @@ class Context(object):
         
     def emit(self, byte_code, arg=bytecode.NO_ARG):
         assert(isinstance(byte_code,int))
-        self.instructions.append(byte_code)
-        args = str(arg)
-        self.instructions.append(args)
+        assert(isinstance(arg,int))
+        self.instructions.append((byte_code,arg))
 
     def register_variable(self, name):
-        self.variables[str(name)] = objects.Null()
-        return str(name)
+        index = len(self.variables)
+        self.variables[index] = objects.Variable(name,objects.Null())
+        return index
 
-    def register_constant(self, constant, name=None):
-        if not name:
-            name = len(self.constants)
-        self.constants[str(name)] = constant        
-        return str(name)
+    def register_constant(self, constant):
+        index = len(self.constants)
+        self.constants.append(constant)
+        return index
 
-    def build(self, arguments=None, name="<input>"):
+    def register_function(self, function):
+        index = len(self.functions)
+        self.functions[index] = function
+        return index
+    
+    def build(self, arguments=[], name="<input>"):
         
-        if arguments is None:
+        if isinstance(arguments, ast_objects.Null):
             arguments = []
-        if type(arguments) is ast_objects.Null:
-            arguments = []
-        elif type(arguments) is ast_objects.Array:
-            arguments = arguments.statements
+        elif isinstance(arguments, ast_objects.Array):
+            arguments = [s.getname() for s in arguments.getstatements()]
         
         return bytecode.Bytecode(
             instructions=self.instructions,
             name=name,
             arguments=arguments,
             constants=self.constants,
+            functions=self.functions,
             variables=self.variables,
         )
 
@@ -60,28 +64,28 @@ def compile_functiondeclaration(context, ast):
     # to be a 'parent' instead of merging them
     # then work up through them as needed
     ctx = Context()
-    for k, v in context.constants.iteritems():
-        ctx.constants[k] = v
+    for v in context.constants:
+        ctx.constants.append(v)
     for k, v in context.variables.iteritems():
         ctx.variables[k] = v
 
     #arg_count = 0
     #
+    indexes = []
+    
     if type(ast.args) is not ast_objects.Null:
-        
-        arg_count = len(ast.args.get_statements())
         
         for arg in ast.args.get_statements():
             assert(isinstance(arg,ast_objects.Variable))
             name = str(arg.getname())
             # TODO: need a way to say these names are to be
             # filled by literal arguments when this is called.
-            ctx.variables[name] = objects.Null()
+            indexes.append(ctx.register_variable(name))
         
     compile_block(ctx,ast.block)
     
-    fn = ctx.build(ast.args, name=ast.name)
-    context.register_constant(fn, ast.name)
+    fn = ctx.build(indexes, name=ast.name)
+    context.register_function(fn)
     context.emit(bytecode.LOAD_CONST,0)
 
 
@@ -94,12 +98,15 @@ def compile_function(context, ast):
         for arg in ast.args.get_statements():
             compile_any(context, arg)
     
-    #print "calling %s" % ast.name.name
-    fn = context.constants.get(ast.name.name, None)
-    if fn:
-        context.emit(bytecode.CALL, ast.name.name)
+    index = -1
+    for k, v in context.functions.iteritems():
+        assert(isinstance(v, bytecode.Bytecode))
+        if v.name == ast.name:
+            index = k
+    if index > -1:
+        context.emit(bytecode.CALL, index)
     else:
-        raise Exception("function does not exist")
+        raise Exception("function %s does not exist" % ast.name)
 
 
 def compile_block(context, ast):
@@ -123,7 +130,7 @@ def compile_array(context, ast):
 
 def compile_null(context, ast):
     assert(isinstance(ast,ast_objects.Null))
-    context.emit(bytecode.LOAD_CONST,"0")
+    context.emit(bytecode.LOAD_CONST,0)
 
 
 def compile_boolean(context, ast):
@@ -131,7 +138,7 @@ def compile_boolean(context, ast):
     value = objects.Boolean(ast.value)
     index = context.register_constant(value)
     
-    context.emit(bytecode.LOAD_CONST,str(index))
+    context.emit(bytecode.LOAD_CONST,index)
 
 
 def compile_integer(context, ast):
@@ -139,7 +146,7 @@ def compile_integer(context, ast):
     value = objects.Integer(ast.value)
     index = context.register_constant(value)
     
-    context.emit(bytecode.LOAD_CONST,str(index))
+    context.emit(bytecode.LOAD_CONST,index)
 
 
 def compile_float(context, ast):
@@ -147,19 +154,28 @@ def compile_float(context, ast):
     value = objects.Float(ast.value)
     index = context.register_constant(value)
     
-    context.emit(bytecode.LOAD_CONST,str(index))
+    context.emit(bytecode.LOAD_CONST,index)
 
 
 def compile_string(context, ast):
     assert(isinstance(ast,ast_objects.String))
     value = objects.String(ast.value)
     index = context.register_constant(value)    
-    context.emit(bytecode.LOAD_CONST,str(index))
+    context.emit(bytecode.LOAD_CONST,index)
 
 
 def compile_variable(context, ast):
     assert(isinstance(ast,ast_objects.Variable))
-    context.emit(bytecode.LOAD_VARIABLE,ast.name)
+    index = None
+    for k, v in context.variables.iteritems():
+        assert(isinstance(v,objects.Variable))
+        if v.name == ast.getname():
+            index = k
+            break
+    if index is not None:
+        context.emit(bytecode.LOAD_VARIABLE,index)
+    else:
+        raise Exception("Variable %s not yet defined" % ast.getname())
     
 
 def compile_print(context, ast):
@@ -187,22 +203,22 @@ def compile_if(context, ast):
     # in a constant and then reference that constant name, which can contain the
     # jump position and be updated if need be
     
-    context.emit(bytecode.JUMP_IF_ZERO,"0")
+    context.emit(bytecode.JUMP_IF_ZERO,0)
     # make a note of the instruction we'll have to change
     false_jump = len(context.instructions) - 1
     # then add the true block
     compile_any(context,ast.body)
     # then a jump from the true block to after the false block
-    context.emit(bytecode.JUMP,"0")
+    context.emit(bytecode.JUMP,0)
     # the start of the false block is the current length
     false_block = len(context.instructions)
     # so set the false block jump to that point
-    context.instructions[false_jump] = str(false_block)
+    context.instructions[false_jump] = (context.instructions[false_jump][0],false_block)
     compile_any(context,ast.else_body)
     # get the point we're at now
     after_false = len(context.instructions)
     # then change the true jump to point here
-    context.instructions[false_block-1] = str(after_false)
+    context.instructions[false_block-1] = (context.instructions[false_block-1][0], after_false)
 
 
 def compile_equal(context, ast):
@@ -303,7 +319,7 @@ def compile_assignment(context, ast):
     
     index = context.register_variable(name)
     compile_any(context, ast.right)
-    context.emit(bytecode.STORE_VARIABLE, str(index))
+    context.emit(bytecode.STORE_VARIABLE, index)
 
 
 def compile_argument(context, name):
@@ -369,6 +385,6 @@ def compile(ast, context=None):
         context = Context()
     
     compile_any(context, ast)
-    context.emit(bytecode.RETURN,"1")
+    context.emit(bytecode.RETURN,1)
     
     return context.build()
