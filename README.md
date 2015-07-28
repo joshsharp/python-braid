@@ -11,7 +11,7 @@ RPly's interface is a bit higher level.
 
 ## Running
 
-`python interpreter.py`
+`python main.py` for REPL, `python main.py [filename]` for interpreting a file
 
 `:a` gives you the AST of the last statement, `:e` to list environment variables, `:q` or Ctrl-C to quit. The REPL now supports multi-line input too — it'll just keep appending code and trying to interpret it until it's valid (eg. you closed the block or whatever), or you break it ;)
 
@@ -19,7 +19,7 @@ RPly's interface is a bit higher level.
 
 Basic arithmetic, floats, integers, booleans, and strings, variable assignment, if expressions, and a print() function.
 
-The result of the last statement is stored in `it`, so you can do: 
+~~The result of the last statement is stored in `it`, so you can do:~~ (this is broken)
 
 ```
 >>> 5 + 5
@@ -74,6 +74,15 @@ Program(BinaryOp(Variable('a'), If(Boolean(True))Then(Integer(5))Else(None)))
 ```
 >>> [5, 6, ["hi", 7.0]]
 = [5, 6, [hi, 7.0]]
+```
+
+```
+func a(b):
+ b + 1
+end
+
+>>> b(1)
+= 2
 ```
 
 ## Compiling
