@@ -170,13 +170,16 @@ class Integer(BaseBox):
     
 class Float(BaseBox):
     
-    def __init__(self, value):
-        self.floatvalue = 1.0
+    def __init__(self, val):
+        self.floatvalue = float(val)
 
     @property
     def value(self):
-        return 1.0
-        
+        return float(self.floatvalue)
+    
+    def to_string(self):
+        return str(self.value)
+    
     def equals(self, right):
         
         if isinstance(right,Float):

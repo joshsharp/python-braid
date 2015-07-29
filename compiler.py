@@ -356,6 +356,7 @@ def compile_any(context, ast):
         "print":compile_print,
         "string":compile_string,
         "integer":compile_integer,
+        "float":compile_float,
         "boolean":compile_boolean,
         "array":compile_array,
         "innerarray":compile_innerarray,

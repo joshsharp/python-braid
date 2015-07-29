@@ -28,6 +28,33 @@ CALL                = 90
 NO_ARG              = -255
 
 
+reverse = {
+     1: "LOAD_CONST",
+     2: "BINARY_NEQ",
+     3: "PRINT",
+     4: "BINARY_EQ",
+     5: "RETURN",
+     6: "STORE_VARIABLE",
+     7: "LOAD_VARIABLE",
+     8: "JUMP",
+     9: "JUMP_IF_NOT_ZERO",
+    10: "JUMP_IF_ZERO",
+    11: "BINARY_ADD",
+    12: "BINARY_SUB",
+    13: "BINARY_LT",
+    14: "BINARY_LTE",
+    15: "BINARY_GT",
+    16: "BINARY_GTE",
+    17: "BINARY_AND",
+    18: "BINARY_OR",
+    19: "NOT",
+    20: "BINARY_MUL",
+    21: "BINARY_DIV",
+    50: "INDEX",
+    90: "CALL",
+  -255: "NO_ARG"
+}
+
 class Bytecode(object):
     """Also plundered from Cycy"""
     
@@ -66,7 +93,7 @@ class Bytecode(object):
 
         for offset, byte_code, arg in self:
 
-            name = byte_code
+            name = reverse[byte_code]
 
             str_arg = ""
             if arg != NO_ARG:

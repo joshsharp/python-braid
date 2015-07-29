@@ -7,7 +7,7 @@ class Interpreter(object):
         
     def compile_interpret(self, ast):
         byte_code = compiler.compile(ast, self.context)
-        print byte_code.dump(True)
+        #print byte_code.dump(True)
     
         return self.interpret(byte_code)
     
@@ -21,14 +21,21 @@ class Interpreter(object):
         
         #for index, value in zip(byte_code.arguments,args):
         #    byte_code.variables[index] = value
-            
-        for index in xrange(0,len(args)):
-            byte_code.variables[index] = args[index]
+        
+        print "(running %s)" % byte_code.name
+        
+        for i in xrange(0,len(args)):
+            index = byte_code.arguments[i]
+            print "(arg %s going into %s)" % (args[i].dump(),index)
+            byte_code.variables[index] = objects.Variable("arg",args[i])
         
         while pc < len(byte_code.instructions):
             
             # the type of instruction and arg (a tuple)
             opcode, arg = byte_code.instructions[pc]
+            
+            print "(%s %s %s)" % (pc, bytecode.reverse[opcode], arg)
+            
             # then increment
             pc += 1
             
@@ -40,6 +47,7 @@ class Interpreter(object):
             elif opcode == bytecode.LOAD_VARIABLE:
                 var = byte_code.variables[arg]
                 assert(isinstance(var,objects.Variable))
+                #print "- appending value %s" % var.value.dump()
                 stack.append(var.value)
             
             elif opcode == bytecode.STORE_VARIABLE:
@@ -64,6 +72,18 @@ class Interpreter(object):
                 right = stack.pop()
                 left = stack.pop()
                 result = left.sub(right)
+                stack.append(result)
+            
+            elif opcode == bytecode.BINARY_MUL:
+                right = stack.pop()
+                left = stack.pop()
+                result = left.mul(right)
+                stack.append(result)
+                
+            elif opcode == bytecode.BINARY_DIV:
+                right = stack.pop()
+                left = stack.pop()
+                result = left.div(right)
                 stack.append(result)
             
             elif opcode == bytecode.BINARY_EQ:
