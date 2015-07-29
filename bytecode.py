@@ -86,7 +86,7 @@ class Bytecode(object):
             print "%s: %s" % (i, v.to_string())
         
         for k, v in self.variables.iteritems():
-            print "%s: %s" % (k, v)
+            print "%s: %s" % (k, v.dump())
         
         
         lines = []

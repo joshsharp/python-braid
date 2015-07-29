@@ -16,7 +16,7 @@ pg = ParserGenerator(
     # A list of all token names, accepted by the parser.
     ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'VARIABLE', 'BOOLEAN',
      'PLUS', 'MINUS', 'MUL', 'DIV',
-     'IF', 'ELSE', 'COLON', 'END', 'AND', 'OR', 'NOT', 'LET',
+     'IF', 'ELSE', 'COLON', 'END', 'AND', 'OR', 'NOT', 'LET','WHILE',
      '(', ')', '=', '==', '!=', '>=', '<=', '<', '>', '[', ']', ',',
      '$end', 'NEWLINE', 'FUNCTION',
      
@@ -28,7 +28,7 @@ pg = ParserGenerator(
         ('left', ['LET',]),
         ('left', ['=']),
         ('left', ['[',']',',']),
-        ('left', ['IF', 'COLON', 'ELSE', 'END', 'NEWLINE',]),
+        ('left', ['IF', 'COLON', 'ELSE', 'END', 'NEWLINE','WHILE',]),
         ('left', ['AND', 'OR',]),
         ('left', ['NOT',]),
         ('left', ['==', '!=', '>=','>', '<', '<=',]),
@@ -169,6 +169,10 @@ def expression_if(state, p):
 @pg.production('expression : IF expression COLON NEWLINE block ELSE COLON NEWLINE block END')
 def expression_if_else(state, p):
     return If(condition=p[1],body=p[4],else_body=p[8])
+
+@pg.production('expression : WHILE expression COLON NEWLINE block END')
+def expression_while(state, p):
+    return While(condition=p[1],body=p[4])
 
 @pg.production('expression : VARIABLE')
 def expression_variable(state, p):

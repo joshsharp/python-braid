@@ -194,7 +194,7 @@ def compile_if(context, ast):
     context.emit(bytecode.BINARY_EQ,bytecode.NO_ARG)
     
     # condition:
-    # jump if zero: false block
+    # jump if zero (false): false block
     # true block
     # jump to end
     # false block
@@ -219,6 +219,30 @@ def compile_if(context, ast):
     after_false = len(context.instructions)
     # then change the true jump to point here
     context.instructions[false_block-1] = (context.instructions[false_block-1][0], after_false)
+
+
+def compile_while(context, ast):
+    assert(isinstance(ast, ast_objects.While))
+    condition_pos = len(context.instructions)
+    compile_any(context, ast.condition)
+    # add true
+    context.emit(bytecode.LOAD_CONST,context.TRUE)
+    # compare the condition to true
+    context.emit(bytecode.BINARY_EQ,bytecode.NO_ARG)
+    
+    # condition:
+    # jump if zero (false): after the block
+    # block
+    # jump to condition
+    
+    # this will point to after the end
+    context.emit(bytecode.JUMP_IF_ZERO,0)
+    # make a note of the instruction we'll have to change
+    false_jump = len(context.instructions) - 1
+    compile_any(context,ast.body)
+    context.emit(bytecode.JUMP,condition_pos)
+    after_block = len(context.instructions)
+    context.instructions[false_jump] = (context.instructions[false_jump][0],after_block)
 
 
 def compile_equal(context, ast):
@@ -316,8 +340,14 @@ def compile_assignment(context, ast):
     assert(isinstance(ast.left,ast_objects.Variable))
     
     name = str(ast.left.getname())
-    
-    index = context.register_variable(name)
+    index = None
+    for k, v in context.variables.iteritems():
+        if v.name == name:
+            index = k
+            break
+
+    if index is None:        
+        index = context.register_variable(name)
     compile_any(context, ast.right)
     context.emit(bytecode.STORE_VARIABLE, index)
 
@@ -364,6 +394,7 @@ def compile_any(context, ast):
         "null":compile_null,
         "variable":compile_variable,
         "if":compile_if,
+        "while":compile_while,
         "greaterthan":compile_greaterthan,
         "greaterthanequal":compile_greaterthanequal,
         "lessthan":compile_lessthan,

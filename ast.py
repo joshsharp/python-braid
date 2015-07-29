@@ -307,6 +307,18 @@ class If(BaseBox):
         return 'If(%s) Then(%s) Else(%s)' % (self.condition.rep(), self.body.rep(), self.else_body.rep())
 
 
+class While(BaseBox):
+    def __init__(self, condition, body):
+        self.condition = condition
+        self.body = body
+        
+    def eval(self, env):
+        return Null()
+
+    def rep(self):
+        return 'While(%s) Then(%s)' % (self.condition.rep(), self.body.rep())
+
+
 class BinaryOp(BaseBox):
     def __init__(self, left, right):
         self.left = left

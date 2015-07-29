@@ -39,5 +39,11 @@ print(d(6,7))
 print(d(5,4))
 print(d(6,7) + d(7,5))
 
+let boo = 0
+while boo < 5:
+  print(boo)
+  let boo = boo + 1
+end
+
 "done"
 

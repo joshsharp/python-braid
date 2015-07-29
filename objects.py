@@ -332,3 +332,6 @@ class Variable(BaseBox):
     def __init__(self, name, value):
         self.name = str(name)
         self.value = value
+
+    def dump(self):
+        return "Variable %s" % str(self.name)
