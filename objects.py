@@ -12,6 +12,7 @@ class Null(BaseBox):
     def dump(self):
         return "null"
 
+
 class Function(BaseBox):
     
     def __init__(self, name, args, block):
@@ -24,6 +25,45 @@ class Function(BaseBox):
 
     def dump(self):
         return "function"
+
+
+class Array(BaseBox):
+    
+    def __init__(self, args):
+        self.values = args
+    
+    def dump(self):
+        return self.to_string()
+    
+    def map(self, fun, ls):  
+        nls = []
+        for l in ls:
+          nls.append(fun(l))
+        return nls
+    
+    def push(self, statement):
+        self.values.insert(0,statement)
+    
+    def append(self, statement):
+        self.values.append(statement)
+    
+    def index(self, i):
+        if type(i) is Integer:
+            return self.values[i.value]
+        raise LogicError("Cannot index with that value")
+    
+    def add(self, right):
+    
+        if type(right) is Array:
+            result = Array([])
+            result.values.extend(self.values)
+            result.values.extend(right.values)
+            return result
+        raise LogicError("Cannot add that to array")
+    
+    def to_string(self):
+        return '[%s]' % (", ".join(self.map(lambda x: x.to_string(),self.values)))
+
 
 class Boolean(BaseBox):
     

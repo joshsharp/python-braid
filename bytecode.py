@@ -22,10 +22,11 @@ BINARY_OR           = 18
 NOT                 = 19
 BINARY_MUL          = 20
 BINARY_DIV          = 21
+STORE_ARRAY         = 22
 INDEX               = 50
 CALL                = 90
 
-NO_ARG              = -255
+NO_ARG              = 0
 
 
 reverse = {
@@ -50,9 +51,10 @@ reverse = {
     19: "NOT",
     20: "BINARY_MUL",
     21: "BINARY_DIV",
+    22: "STORE_ARRAY",
     50: "INDEX",
     90: "CALL",
-  -255: "NO_ARG"
+     0: "NO_ARG"
 }
 
 class Bytecode(object):

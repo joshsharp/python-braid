@@ -57,10 +57,22 @@ class Interpreter(object):
                 byte_code.variables[arg] = objects.Variable(oldvar.name,value)
                 stack.append(value)
             
+            elif opcode == bytecode.STORE_ARRAY:
+                values = []
+                for i in xrange(arg):
+                    values.append(stack.pop())
+                stack.append(objects.Array(values))
+            
             elif opcode == bytecode.PRINT:
                 value = stack.pop()
                 print value.to_string()
                 stack.append(objects.Null())
+            
+            elif opcode == bytecode.INDEX:
+                left = stack.pop()
+                right = stack.pop()
+                result = left.index(right)
+                stack.append(result)
             
             elif opcode == bytecode.BINARY_ADD:
                 right = stack.pop()

@@ -124,9 +124,10 @@ def compile_innerarray(context, ast):
 
 def compile_array(context, ast):
     assert(isinstance(ast,ast_objects.Array))
-    for statement in ast.get_statements():
+    length = len(ast.get_statements())
+    for statement in reversed(ast.get_statements()):
         compile_any(context,statement)
-
+    context.emit(bytecode.STORE_ARRAY,length)
 
 def compile_null(context, ast):
     assert(isinstance(ast,ast_objects.Null))
@@ -344,7 +345,7 @@ def compile_assignment(context, ast):
     for k, v in context.variables.iteritems():
         if v.name == name:
             index = k
-            break
+            raise errors.ImmutableError(name)
 
     if index is None:        
         index = context.register_variable(name)
