@@ -64,18 +64,24 @@ def compile_functiondeclaration(context, ast):
     # to be a 'parent' instead of merging them
     # then work up through them as needed
     ctx = Context()
+    
+    fn_index = context.register_function(bytecode.Bytecode(None,None,None,None,None,ast.name))
+    
     for v in context.constants:
         ctx.constants.append(v)
     for k, v in context.variables.iteritems():
         ctx.variables[k] = v
+    for k, v in context.functions.iteritems():
+        ctx.functions[k] = v
 
     #arg_count = 0
     #
     indexes = []
     
+    
     if type(ast.args) is not ast_objects.Null:
         
-        for arg in ast.args.get_statements():
+        for arg in reversed(ast.args.get_statements()):
             assert(isinstance(arg,ast_objects.Variable))
             name = str(arg.getname())
             # TODO: need a way to say these names are to be
@@ -85,7 +91,9 @@ def compile_functiondeclaration(context, ast):
     compile_block(ctx,ast.block)
     
     fn = ctx.build(indexes, name=ast.name)
-    context.register_function(fn)
+    context.functions[fn_index] = fn
+    ctx.functions[fn_index] = fn
+    
     context.emit(bytecode.LOAD_CONST,0)
 
 

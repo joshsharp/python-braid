@@ -79,7 +79,7 @@ def loop():
 
             except Exception as e:
                 opening = 0 # reset
-                os.write(2, "ERROR: %s\n" % str(e))
+                os.write(2, "ERROR: %s\n" % (str(e)))
                 continue
 
     except KeyboardInterrupt:

@@ -7,10 +7,10 @@ class Null(BaseBox):
         pass
 
     def to_string(self):
-        return "(null)"
+        return "<null>"
 
     def dump(self):
-        return "null"
+        return "<null>"
 
 
 class Function(BaseBox):
@@ -24,7 +24,7 @@ class Function(BaseBox):
         return "(function)"
 
     def dump(self):
-        return "function"
+        return "<function %s>" % name
 
 
 class Array(BaseBox):
