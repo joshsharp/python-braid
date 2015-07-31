@@ -84,12 +84,17 @@ end
 >>> b(1)
 = 2
 
-# while loops
-let a = 0
-while a < 5:
-  print(a)
-  let a = a + 1
+# immutability means loops become recursion
+func p_message(msg, n):
+  if n > 0:
+    print(msg)
+    p_message(n - 1)
+  end
 end
+
+>>> p_message("hellooo",2)
+hellooo
+hellooo
 ```
 
 ## Compiling
@@ -110,7 +115,7 @@ A language which can do things I find interesting, and the tools necessary to ex
 - [X] Interpreter/VM
 - [X] Compiles to RPython (mostly but sometimes broken)
 - [ ] JIT
-- [ ] Immutability
+- [X] Immutability (initial support anyway)
 - [ ] First-class functions
 - [ ] Structs and traits
 - [ ] FP concepts like map/reduce
