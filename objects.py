@@ -47,14 +47,14 @@ class Array(BaseBox):
     def append(self, statement):
         self.values.append(statement)
     
-    def index(self, i):
-        if type(i) is Integer:
-            return self.values[i.value]
+    def index(self, right):
+        if isinstance(right, Integer):
+            return self.values[right.value]
         raise LogicError("Cannot index with that value")
     
     def add(self, right):
     
-        if type(right) is Array:
+        if isinstance(right, Array):
             result = Array([])
             result.values.extend(self.values)
             result.values.extend(right.values)
@@ -357,10 +357,10 @@ class String(BaseBox):
     def div(self, right):
         raise LogicError("Cannot divide a string")
     
-    def index(self, value):
+    def index(self, right):
         if isinstance(right, Integer):
-            if value.value >= 0:
-                return String(str(self.value[value.value]))
+            if right.value >= 0:
+                return String(str(self.value[right.value]))
         raise LogicError("Cannot index with that")
     
     def dump(self):
