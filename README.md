@@ -123,6 +123,7 @@ A language which can do things I find interesting, and the tools necessary to ex
 - [ ] FP concepts like map/reduce
 - [ ] Pattern matching
 - [ ] Concurrency via message passing
+- [ ] Standard library
 
 ## Status updates
 
