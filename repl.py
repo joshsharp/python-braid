@@ -86,7 +86,7 @@ def loop():
         os.write(1, "\n")
 
 def main():
-    os.write(1, "Interpreter\n")
+    os.write(1, "Mtn interpreter\n")
     loop()
 
 if __name__ == '__main__':
