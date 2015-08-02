@@ -156,15 +156,18 @@ class Interpreter(object):
                 pc = arg
 
             elif opcode == bytecode.CALL:
-                func = byte_code.functions[arg]
-                args = []
-                if len(func.arguments) > len(stack):
-                    raise Exception("Not enough arguments")
-                
-                for i in range(0,len(func.arguments)):
-                    args.append(stack.pop())
-                stack.append(self.interpret(func,args))
-
+                assert(isinstance(byte_code.variables[arg],objects.Variable))
+                if isinstance(byte_code.variables[arg].value,objects.Function):
+                    func = byte_code.variables[arg].value.code
+                    args = []
+                    if len(func.arguments) > len(stack):
+                        raise Exception("Not enough arguments")
+                    
+                    for i in range(0,len(func.arguments)):
+                        args.append(stack.pop())
+                    stack.append(self.interpret(func,args))
+                else:
+                    raise Exception("Not a function")
         return stack[len(stack) - 1]
         
 

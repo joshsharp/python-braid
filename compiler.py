@@ -21,7 +21,7 @@ class Context(object):
 
     def register_variable(self, name):
         index = len(self.variables)
-        self.variables[index] = objects.Variable(name,objects.Null())
+        self.variables[index] = objects.Variable(name,objects.String("<uninitialised>"))
         return index
 
     def register_constant(self, constant):
@@ -65,19 +65,14 @@ def compile_functiondeclaration(context, ast):
     # then work up through them as needed
     ctx = Context()
     
-    fn_index = context.register_function(bytecode.Bytecode(None,None,None,None,None,ast.name))
+    fn_index = context.register_variable(ast.name)
     
     for v in context.constants:
         ctx.constants.append(v)
     for k, v in context.variables.iteritems():
         ctx.variables[k] = v
-    for k, v in context.functions.iteritems():
-        ctx.functions[k] = v
-
-    #arg_count = 0
-    #
-    indexes = []
     
+    indexes = []
     
     if type(ast.args) is not ast_objects.Null:
         
@@ -91,10 +86,9 @@ def compile_functiondeclaration(context, ast):
     compile_block(ctx,ast.block)
     
     fn = ctx.build(indexes, name=ast.name)
-    context.functions[fn_index] = fn
-    ctx.functions[fn_index] = fn
-    
-    context.emit(bytecode.LOAD_CONST,0)
+    context.variables[fn_index] = objects.Variable(ast.name,objects.Function(ast.name,fn))
+    ctx.variables[fn_index] = objects.Variable(ast.name,objects.Function(ast.name,fn))
+    context.emit(bytecode.LOAD_VARIABLE,fn_index)
 
 
 def compile_function(context, ast):
@@ -107,8 +101,9 @@ def compile_function(context, ast):
             compile_any(context, arg)
     
     index = -1
-    for k, v in context.functions.iteritems():
-        assert(isinstance(v, bytecode.Bytecode))
+    for k, v in context.variables.iteritems():
+        assert(isinstance(v, objects.Variable))
+        #assert(isinstance(v.value, objects.Function))
         if v.name == ast.name:
             index = k
     if index > -1:

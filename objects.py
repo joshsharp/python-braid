@@ -15,16 +15,15 @@ class Null(BaseBox):
 
 class Function(BaseBox):
     
-    def __init__(self, name, args, block):
+    def __init__(self, name, code):
         self.name = name
-        self.args = args
-        self.block = block
-    
+        self.code = code
+        
     def to_string(self):
-        return "(function)"
+        return "<function %s>" % self.name
 
     def dump(self):
-        return "<function %s>" % name
+        return "<function %s>" % self.name
 
 
 class Array(BaseBox):
@@ -184,7 +183,7 @@ class Integer(BaseBox):
             return Integer(self.value + right.value)
         if isinstance(right,Float):
             return Float(float(self.value) + right.value)
-        raise LogicError("Cannot add that to integer")
+        raise LogicError("Cannot add %s to integer" % str(right.__class__.__name__))
     
     def sub(self, right):
         if isinstance(right, Integer):
@@ -374,4 +373,4 @@ class Variable(BaseBox):
         self.value = value
 
     def dump(self):
-        return "Variable %s" % str(self.name)
+        return self.value.dump()

@@ -84,9 +84,11 @@ class Bytecode(object):
         return 'bytecode'
 
     def dump(self, pretty=True, indent=0):
+        print "CONSTANTS:"
         for i, v in enumerate(self.constants):
             print "%s: %s" % (i, v.to_string())
         
+        print "VARS:"
         for k, v in self.variables.iteritems():
             print "%s: %s" % (k, v.dump())
         
@@ -106,7 +108,7 @@ class Bytecode(object):
                 if byte_code == LOAD_CONST:
                     line += " => " + self.constants[arg].dump()
                 elif byte_code == CALL:
-                    line += " => \n" + self.functions[arg].dump(True, indent=indent+2)
+                    line += str(arg) + " => \n" + self.variables[arg].value.dump()
                         
                 elif byte_code == RETURN:
                     if arg:
