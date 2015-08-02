@@ -97,6 +97,15 @@ end
 >>> p_message("hellooo",2)
 hellooo
 hellooo
+
+# functions can be passed around
+func a():
+  1
+end
+
+>>> let b = a
+>>> b()
+= 1
 ```
 
 ## Compiling
@@ -118,7 +127,7 @@ A language which can do things I find interesting, and the tools necessary to ex
 - [X] Compiles to RPython (mostly but sometimes broken)
 - [ ] JIT
 - [X] Immutability (initial support anyway)
-- [ ] First-class functions
+- [X] First-class functions (sort of)
 - [ ] Structs and traits
 - [ ] FP concepts like map/reduce
 - [ ] Pattern matching
