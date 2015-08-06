@@ -26,7 +26,7 @@ STORE_ARRAY         = 22
 INDEX               = 50
 CALL                = 90
 
-NO_ARG              = 0
+NO_ARG              = -255
 
 
 reverse = {
@@ -60,13 +60,12 @@ reverse = {
 class Bytecode(object):
     """Also plundered from Cycy"""
     
-    def __init__(self, instructions, arguments, constants, variables, functions, name):
+    def __init__(self, instructions, arguments, constants, variables, name):
         self.instructions = instructions
         self.name = name
         self.arguments = arguments or []
         self.constants = constants
         self.variables = variables
-        self.functions = functions
 
     def __iter__(self):
         """Yield (offset, byte_code, arg) tuples.
@@ -90,8 +89,10 @@ class Bytecode(object):
         
         print "VARS:"
         for k, v in self.variables.iteritems():
-            print "%s: %s" % (k, v.dump())
+            print "%s: %s => %s" % (k, v.name, v.value.__class__.__name__)
         
+        
+        print "CODE:"
         
         lines = []
 
@@ -108,7 +109,7 @@ class Bytecode(object):
                 if byte_code == LOAD_CONST:
                     line += " => " + self.constants[arg].dump()
                 elif byte_code == CALL:
-                    line += str(arg) + " => \n" + self.variables[arg].value.dump()
+                    line += " => \n" + self.variables[arg].value.dump()
                         
                 elif byte_code == RETURN:
                     if arg:

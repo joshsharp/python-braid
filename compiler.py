@@ -8,11 +8,10 @@ class Context(object):
         self.instructions = []
         self.constants = []
         self.variables = {}
-        self.functions = {}
         
-        self.NULL = self.register_constant(objects.Null())
-        self.TRUE = self.register_constant(objects.Boolean(True))
-        self.FALSE = self.register_constant(objects.Boolean(False))
+        #self.NULL = self.register_constant(objects.Null())
+        #self.TRUE = self.register_constant(objects.Boolean(True))
+        #self.FALSE = self.register_constant(objects.Boolean(False))
         
     def emit(self, byte_code, arg=bytecode.NO_ARG):
         assert(isinstance(byte_code,int))
@@ -21,7 +20,7 @@ class Context(object):
 
     def register_variable(self, name):
         index = len(self.variables)
-        self.variables[index] = objects.Variable(name,objects.String("<uninitialised>"))
+        self.variables[index] = objects.Variable(name,objects.Null())
         return index
 
     def register_constant(self, constant):
@@ -46,7 +45,6 @@ class Context(object):
             name=name,
             arguments=arguments,
             constants=self.constants,
-            functions=self.functions,
             variables=self.variables,
         )
 
@@ -60,9 +58,6 @@ def compile_program(context, ast):
 def compile_functiondeclaration(context, ast):
     assert(isinstance(ast,ast_objects.FunctionDeclaration))
     # new context, but need access to outer context
-    # TODO: this seems wrong, maybe we need the outer context
-    # to be a 'parent' instead of merging them
-    # then work up through them as needed
     ctx = Context()
     
     fn_index = context.register_variable(ast.name)
@@ -79,9 +74,9 @@ def compile_functiondeclaration(context, ast):
         for arg in reversed(ast.args.get_statements()):
             assert(isinstance(arg,ast_objects.Variable))
             name = str(arg.getname())
-            # TODO: need a way to say these names are to be
-            # filled by literal arguments when this is called.
-            indexes.append(ctx.register_variable(name))
+            index = ctx.register_variable(name)
+            indexes.append(index)
+            #context.emit(bytecode.STORE_VARIABLE, index)
         
     compile_block(ctx,ast.block)
     
@@ -193,7 +188,8 @@ def compile_if(context, ast):
     assert(isinstance(ast, ast_objects.If))
     compile_any(context, ast.condition)
     # add true
-    context.emit(bytecode.LOAD_CONST,context.TRUE)
+    t = context.register_constant(objects.Boolean(True))
+    context.emit(bytecode.LOAD_CONST,t)
     # compare the condition to true
     context.emit(bytecode.BINARY_EQ,bytecode.NO_ARG)
     
@@ -230,7 +226,8 @@ def compile_while(context, ast):
     condition_pos = len(context.instructions)
     compile_any(context, ast.condition)
     # add true
-    context.emit(bytecode.LOAD_CONST,context.TRUE)
+    t = context.register_constant(objects.Boolean(True))
+    context.emit(bytecode.LOAD_CONST,t)
     # compare the condition to true
     context.emit(bytecode.BINARY_EQ,bytecode.NO_ARG)
     

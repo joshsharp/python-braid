@@ -3,13 +3,18 @@ import parser, compiler, bytecode, objects, errors
 class Interpreter(object):
 
     def __init__(self):
-        self.context = compiler.Context()
+        pass
         
-    def compile_interpret(self, ast):
-        byte_code = compiler.compile(ast, self.context)
-        #print byte_code.dump(True)
+    def compile_interpret(self, ast, context=None):
+        if not context:
+            context = compiler.Context()
+        byte_code = compiler.compile(ast, context)
     
         return self.interpret(byte_code)
+    
+    def copy_context(self, code_from, code_to):
+        for k, v in code_from.variables.iteritems():
+            code_to.variables[k] = v
     
     def interpret(self, byte_code, args=[]):
         
@@ -24,10 +29,16 @@ class Interpreter(object):
         
         print "(running %s)" % byte_code.name
         
+        # copy args into inner context
         for i in xrange(0,len(args)):
+            # TODO: this doesn't make sense, indexes change I think?
+            # Make sure these aren't getting overwritten
             index = byte_code.arguments[i]
             print "(arg %s going into %s)" % (args[i].dump(),index)
             byte_code.variables[index] = objects.Variable("arg",args[i])
+            
+        
+        print byte_code.dump(True)
         
         while pc < len(byte_code.instructions):
             
@@ -52,9 +63,11 @@ class Interpreter(object):
             
             elif opcode == bytecode.STORE_VARIABLE:
                 value = stack.pop()
-                oldvar = byte_code.variables[arg]
-                assert(isinstance(oldvar,objects.Variable))
-                byte_code.variables[arg] = objects.Variable(oldvar.name,value)
+                oldvar = byte_code.variables.get(arg,None)
+                if isinstance(oldvar,objects.Variable):
+                    byte_code.variables[arg] = objects.Variable(oldvar.name,value)
+                else:
+                    byte_code.variables[arg] = objects.Variable("arg",value)
                 stack.append(value)
             
             elif opcode == bytecode.STORE_ARRAY:
@@ -159,6 +172,7 @@ class Interpreter(object):
                 assert(isinstance(byte_code.variables[arg],objects.Variable))
                 if isinstance(byte_code.variables[arg].value,objects.Function):
                     func = byte_code.variables[arg].value.code
+                    self.copy_context(byte_code,func)
                     args = []
                     if len(func.arguments) > len(stack):
                         raise Exception("Not enough arguments")

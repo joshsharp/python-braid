@@ -23,6 +23,7 @@ def printresult(result, prefix):
         print prefix
 def loop():
     intr = interpreter.Interpreter()
+    context = compiler.Context()
     last = parser.Null()
     
     opening = 0
@@ -51,10 +52,10 @@ def loop():
                 #result = ast.eval(env)
                 #env.variables['it'] = result
                 
-                result = intr.compile_interpret(ast)
+                result = intr.compile_interpret(ast, context)
                 printresult(result,"= ")
                 
-                intr.context.instructions = []
+                context.instructions = []
                 opening = 0
             
             except parser.UnexpectedEndError as e:
@@ -66,7 +67,7 @@ def loop():
                 opening = 0 # reset
                 os.write(2, "ERROR: Cannot perform that operation (%s)\n" % e)
                 continue
-
+            
             except parser.ImmutableError as e:
                 opening = 0 # reset
                 os.write(2, "ERROR: Cannot reassign that (%s)\n" % e)
@@ -76,7 +77,7 @@ def loop():
                 opening = 0 # reset
                 os.write(2, "ERROR: Unexpected '" + e.token + "'\n")
                 continue
-
+            
             except Exception as e:
                 opening = 0 # reset
                 os.write(2, "ERROR: %s\n" % (str(e)))

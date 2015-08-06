@@ -25,6 +25,9 @@ class Function(BaseBox):
     def dump(self):
         return "<function %s>" % self.name
 
+    def add(self, right):
+        raise Exception("Cannot add that to function %s" % self.name)
+    
 
 class Array(BaseBox):
     
