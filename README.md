@@ -1,5 +1,4 @@
-# Mtn
-(It's pronounced 'mountain'.)
+# Braid
 
 **Learning to build a language interpreter with RPython and RPly**
 
@@ -13,7 +12,7 @@ RPly's interface is a bit higher level.
 
 ## Running
 
-`python main.py` for REPL, `python main.py [filename]` for interpreting a file
+`python main.py` for REPL, `python main.py [filename].bd` for interpreting a file
 
 Try `python main.py test.txt` to evaluate stuff it can do.
 
