@@ -18,7 +18,7 @@ def readline(prompt=None):
 def printresult(result, prefix):
     #print type(result)
     if result is not None:
-        print prefix + result.to_string()
+        print "%s %s" % (prefix, result.to_string())
     else:
         print prefix
 def loop():
@@ -36,13 +36,13 @@ def loop():
             if opening > 0:
                 code += '\n' + readline('... ')
             else:                
-                code = readline('>>> ') #.decode(sys.stdin.encoding or locale.getpreferredencoding(True) or 'ascii')
-            if code.strip() == '':
+                code = readline('>>> ')
+            if code.strip(' \t\r\n') == '':
                 continue
-            if code.strip() == ':a':
+            if code.strip(' \t\r\n') == ':a':
                 print last.rep()
                 continue
-            if code.strip() == ':q':
+            if code.strip(' \t\r\n') == ':q':
                 os.write(1, "\n")
                 break
             
@@ -75,19 +75,19 @@ def loop():
             
             except parser.UnexpectedTokenError as e:
                 opening = 0 # reset
-                os.write(2, "ERROR: Unexpected '" + e.token + "'\n")
+                os.write(2, "ERROR: Unexpected '%s'\n" % e.token)
                 continue
             
             except Exception as e:
                 opening = 0 # reset
-                os.write(2, "ERROR: %s\n" % (str(e)))
+                os.write(2, "ERROR: %s %s\n" % (e.__class__.__name__, str(e)))
                 continue
 
     except KeyboardInterrupt:
         os.write(1, "\n")
 
 def main():
-    os.write(1, "Mtn interpreter\n")
+    os.write(1, "Braid interpreter\n")
     loop()
 
 if __name__ == '__main__':

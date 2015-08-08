@@ -23,6 +23,7 @@ NOT                 = 19
 BINARY_MUL          = 20
 BINARY_DIV          = 21
 STORE_ARRAY         = 22
+STORE_DICT          = 23
 INDEX               = 50
 CALL                = 90
 
@@ -52,6 +53,7 @@ reverse = {
     20: "BINARY_MUL",
     21: "BINARY_DIV",
     22: "STORE_ARRAY",
+    23: "STORE_DICT",
     50: "INDEX",
     90: "CALL",
      0: "NO_ARG"

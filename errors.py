@@ -1,4 +1,5 @@
 
+
 class LogicError(Exception):
     
     def __str__(self):

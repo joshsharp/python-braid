@@ -1,4 +1,3 @@
-#from __future__ import unicode_literals
 from rply import ParserGenerator
 from rply.token import BaseBox, Token
 from ast import *
@@ -14,10 +13,11 @@ class ParserState(object):
 
 pg = ParserGenerator(
     # A list of all token names, accepted by the parser.
-    ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'VARIABLE', 'BOOLEAN',
+    ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'IDENTIFIER', 'BOOLEAN',
      'PLUS', 'MINUS', 'MUL', 'DIV',
      'IF', 'ELSE', 'COLON', 'END', 'AND', 'OR', 'NOT', 'LET','WHILE',
      '(', ')', '=', '==', '!=', '>=', '<=', '<', '>', '[', ']', ',',
+     '{','}',
      '$end', 'NEWLINE', 'FUNCTION',
      
     ],
@@ -86,15 +86,15 @@ def statement_expr(state, p):
 def statement_print(state, p):    
     return Print(p[2])
 
-@pg.production('statement : LET VARIABLE = expression')
+@pg.production('statement : LET IDENTIFIER = expression')
 def statement_assignment(state, p):
     return Assignment(Variable(p[1].getstr()),p[3])
 
-@pg.production('statement : FUNCTION VARIABLE ( arglist ) COLON NEWLINE block END')
+@pg.production('statement : FUNCTION IDENTIFIER ( arglist ) COLON NEWLINE block END')
 def statement_func(state, p):
     return FunctionDeclaration(p[1].getstr(), Array(p[3]), p[7])
 
-@pg.production('statement : FUNCTION VARIABLE ( ) COLON NEWLINE block END')
+@pg.production('statement : FUNCTION IDENTIFIER ( ) COLON NEWLINE block END')
 def statement_func_noargs(state, p):
     return FunctionDeclaration(p[1].getstr(), Null(), p[6])
 
@@ -139,16 +139,31 @@ def arglist(state, p):
     p[2].push(p[0])
     return p[2]
 
-@pg.production('arglist : VARIABLE')
-@pg.production('arglist : VARIABLE ,')
+@pg.production('arglist : IDENTIFIER')
+@pg.production('arglist : IDENTIFIER ,')
 def arglist_single(state, p):
     return InnerArray([Variable(p[0].getstr())])
 
-@pg.production('arglist : VARIABLE , arglist')
+@pg.production('arglist : IDENTIFIER , arglist')
 def arglist(state, p):
     # list should already be an InnerArray
     p[2].push(Variable(p[0].getstr()))
     return p[2]
+
+@pg.production('maplist : expression COLON expression')
+@pg.production('maplist : expression COLON expression ,')
+def maplist_single(state, p):
+    return InnerDict({ p[0]: p[2] })
+
+@pg.production('maplist : expression COLON expression , maplist')
+def arglist(state, p):
+    # expressionlist should already be an InnerArray
+    p[4].update(p[0],p[2])
+    return p[4]
+
+@pg.production('expression : { maplist }')
+def expression_dict(state, p):
+    return Dict(p[1])
 
 @pg.production('expression : expression [ expression ]')
 def expression_array_index(state, p):
@@ -174,17 +189,17 @@ def expression_if_else(state, p):
 def expression_while(state, p):
     return While(condition=p[1],body=p[4])
 
-@pg.production('expression : VARIABLE')
+@pg.production('expression : IDENTIFIER')
 def expression_variable(state, p):
     # cannot return the value of a variable if it isn't yet defined
     return Variable(p[0].getstr())
 
-@pg.production('expression : VARIABLE ( )')
+@pg.production('expression : IDENTIFIER ( )')
 def expression_call_noargs(state, p):
     # cannot return the value of a variable if it isn't yet defined
     return Function(p[0].getstr(),InnerArray())
 
-@pg.production('expression : VARIABLE ( expressionlist )')
+@pg.production('expression : IDENTIFIER ( expressionlist )')
 def expression_call_args(state, p):
     # cannot return the value of a variable if it isn't yet defined
     return Function(p[0].getstr(),p[2])
@@ -266,7 +281,6 @@ parser = pg.build()
 state = ParserState()
 
 def parse(code, state=state):
-    
     result = parser.parse(lexer.lex(code),state)
     return result
 

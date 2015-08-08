@@ -45,7 +45,7 @@ class Interpreter(object):
             # the type of instruction and arg (a tuple)
             opcode, arg = byte_code.instructions[pc]
             
-            print "(%s %s %s)" % (pc, bytecode.reverse[opcode], arg)
+            #print "(%s %s %s)" % (pc, bytecode.reverse[opcode], arg)
             
             # then increment
             pc += 1
@@ -75,6 +75,12 @@ class Interpreter(object):
                 for i in xrange(arg):
                     values.append(stack.pop())
                 stack.append(objects.Array(values))
+            
+            elif opcode == bytecode.STORE_DICT:
+                values = {}
+                for i in xrange(arg):
+                    values[stack.pop()] = stack.pop()
+                stack.append(objects.Dict(values))
             
             elif opcode == bytecode.PRINT:
                 value = stack.pop()
@@ -170,8 +176,9 @@ class Interpreter(object):
 
             elif opcode == bytecode.CALL:
                 assert(isinstance(byte_code.variables[arg],objects.Variable))
-                if isinstance(byte_code.variables[arg].value,objects.Function):
-                    func = byte_code.variables[arg].value.code
+                val = byte_code.variables[arg].value
+                if isinstance(val,objects.Function):
+                    func = val.code
                     self.copy_context(byte_code,func)
                     args = []
                     if len(func.arguments) > len(stack):

@@ -1,4 +1,4 @@
-#from __future__ import unicode_literals
+
 from rply import LexerGenerator
 try:
     import rpython.rlib.rsre.rsre_re as re
@@ -47,7 +47,7 @@ lg.add('IMPLEMENT', 'impl(?!\w)')
 lg.add('IMPORT', 'import(?!\w)')
 lg.add('SEND', 'send(?!\w)')
 lg.add('RECEIVE', 'receive(?!\w)')
-lg.add('VARIABLE', "[a-zA-Z_][a-zA-Z0-9_]*")
+lg.add('IDENTIFIER', "[a-zA-Z_][a-zA-Z0-9_]*")
 lg.add('PLUS', '\+')
 lg.add('==', '==')
 lg.add('!=', '!=')

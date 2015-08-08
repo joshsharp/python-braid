@@ -1,3 +1,4 @@
+
 from rply.token import BaseBox
 from errors import *
 
@@ -67,6 +68,51 @@ class Array(BaseBox):
         return '[%s]' % (", ".join(self.map(lambda x: x.to_string(),self.values)))
 
 
+class Dict(BaseBox):
+    
+    def __init__(self, args):
+        self.values = args
+    
+    def dump(self):
+        return self.to_string()
+    
+    def map(self, fun, ls):  
+        nls = []
+        for l in ls:
+          nls.append(fun(l))
+        return nls
+    
+    def update(self, key, val):
+        self.values[key] = val
+
+    def index(self, right):
+        if isinstance(right, Integer):
+            return self.values[right]
+        if isinstance(right, String):
+            return self.values[right]
+        if isinstance(right, Float):
+            return self.values[right]
+        if isinstance(right, Boolean):
+            return self.values[right]
+        raise LogicError("Cannot index with that value")
+    
+    def add(self, right):
+    
+        if isinstance(right, Dict):
+            result = Dict({})
+            for key, val in self.values.iteritems():
+                result[key] = val
+            
+            for key, val in right.values.iteritems():
+                result[key] = val
+
+            return result
+        raise LogicError("Cannot add that to dict")
+    
+    def to_string(self):
+        return '{%s}' % (", ".join(self.map(lambda k: "%s: %s" % (k[0].to_string(), k[1].to_string()),self.values.iteritems())))
+
+
 class Boolean(BaseBox):
     
     def __init__(self, value):
@@ -75,6 +121,13 @@ class Boolean(BaseBox):
     @property
     def value(self):
         return bool(self.boolvalue)
+
+    def __hash__(self):
+        return hash(self.boolvalue)
+
+    def __eq__(self, other):
+        assert(isinstance(other,Boolean))
+        return (self.boolvalue) == (other.boolvalue)
 
     def equals(self, right):
         if isinstance(right, Boolean):
@@ -136,6 +189,13 @@ class Integer(BaseBox):
     @property
     def value(self):
         return int(self.intvalue)
+
+    def __hash__(self):
+        return hash(self.intvalue)
+
+    def __eq__(self, other):
+        assert(isinstance(other,Integer))
+        return (self.intvalue) == (other.intvalue)
 
     def to_string(self):
         return str(self.value)
@@ -218,6 +278,12 @@ class Float(BaseBox):
     @property
     def value(self):
         return float(self.floatvalue)
+    
+    def __hash__(self):
+        return hash(self.value)
+
+    def __eq__(self, other):
+        return (self.value) == (other.value)
     
     def to_string(self):
         return str(self.value)
@@ -303,6 +369,12 @@ class String(BaseBox):
     
     def __init__(self, value):
         self.value = str(value)
+
+    def __hash__(self):
+        return hash(self.value)
+
+    def __eq__(self, other):
+        return (self.value) == (other.value)
 
     def to_string(self):
         return str(self.value)

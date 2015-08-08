@@ -1,3 +1,4 @@
+
 from rply.token import BaseBox
 from errors import *
 
@@ -81,6 +82,7 @@ class Function(BaseBox):
     def to_string(self):
         return "<function '%s'>" % self.name
 
+
 class Block(BaseBox):
     
     def __init__(self, statement):
@@ -108,6 +110,7 @@ class Block(BaseBox):
         result += '\n)'
         return result
 
+
 class InnerArray(BaseBox):
     """
     Only used to handle array values which are passed to Array.
@@ -130,6 +133,7 @@ class InnerArray(BaseBox):
 
     def get_statements(self):
         return self.statements
+
 
 class Array(BaseBox):
     
@@ -183,6 +187,72 @@ class Array(BaseBox):
     
     def to_string(self):
         return '[%s]' % (", ".join(self.map(lambda x: x.to_string(),self.values)))
+
+
+class InnerDict(BaseBox):
+    """
+    Only used to handle array values which are passed to Array.
+    """
+    
+    def __init__(self, statements = None):
+        self.statements = {}
+        self.values = {}
+        if statements:
+            self.statements = statements
+
+    def update(self, key, val):
+        self.statements[key] = val
+    
+    def get_statements(self):
+        return self.statements
+
+
+class Dict(BaseBox):
+    
+    def map(self, fun, ls):  
+        nls = []
+        for l in ls:
+          nls.append(fun(l))
+        return nls
+    
+    def __init__(self, inner):
+        self.statements = inner.get_statements()
+        self.values = {}
+    
+    def get_statements(self):
+        return self.statements
+    
+    def update(self, key, val):
+        self.statements[key] = statement
+    
+    def index(self, i):
+        if type(i) is Integer:
+            return self.values[i.value]
+        if type(i) is Float:
+            return self.values[int(i.value)]
+        if type(i) is String:
+            return self.values[i.value]
+        raise LogicError("Cannot index with that value")
+    
+    def add(self, right):
+    
+        raise LogicError("Cannot add that to dict")
+    
+    def eval(self, env):
+        
+        if len(self.values) == 0:            
+            for statement in self.statements:
+                self.values.append(statement.eval(env))
+        return self
+    
+    def rep(self):
+        result = 'Dict('
+        result += ",".join(self.map(lambda k: "%s: %s" % (k[0].rep(), k[1].rep()),self.statements.iteritems()))
+        result += ')'
+        return result
+    
+    def to_string(self):
+        return '{ %s }' % (", ".join(self.map(lambda k: "%s: %s" % (k[0].to_string(), k[1].to_string()),self.values.iteritems())))
 
 
 class Null(BaseBox):

@@ -127,6 +127,25 @@ def compile_array(context, ast):
         compile_any(context,statement)
     context.emit(bytecode.STORE_ARRAY,length)
 
+
+def compile_innerdict(context, ast):
+    assert(isinstance(ast,ast_objects.InnerDict))
+    for key, val in ast.get_statements().iteritems():
+        compile_any(context,key)
+        compile_any(context,val)
+
+
+def compile_dict(context, ast):
+    assert(isinstance(ast,ast_objects.Dict))
+    length = len(ast.get_statements().keys())
+    for key, val in ast.get_statements().iteritems():
+        print "add key %s" % key.rep()
+        compile_any(context,key)
+        print "add val %s" % val.rep()
+        compile_any(context,val)
+    context.emit(bytecode.STORE_DICT,length)
+
+
 def compile_null(context, ast):
     assert(isinstance(ast,ast_objects.Null))
     context.emit(bytecode.LOAD_CONST,0)
@@ -391,6 +410,8 @@ def compile_any(context, ast):
         "boolean":compile_boolean,
         "array":compile_array,
         "innerarray":compile_innerarray,
+        "dict":compile_dict,
+        "innerdict":compile_dict,
         "program":compile_program,
         "null":compile_null,
         "variable":compile_variable,
