@@ -130,15 +130,15 @@ def compile_array(context, ast):
 
 def compile_innerdict(context, ast):
     assert(isinstance(ast,ast_objects.InnerDict))
-    for key, val in ast.get_statements().iteritems():
+    for key, val in ast.get_data().iteritems():
         compile_any(context,key)
         compile_any(context,val)
 
 
 def compile_dict(context, ast):
     assert(isinstance(ast,ast_objects.Dict))
-    length = len(ast.get_statements().keys())
-    for key, val in ast.get_statements().iteritems():
+    length = len(ast.get_data().keys())
+    for key, val in ast.get_data().iteritems():
         print "add key %s" % key.rep()
         compile_any(context,key)
         print "add val %s" % val.rep()

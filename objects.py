@@ -101,10 +101,10 @@ class Dict(BaseBox):
         if isinstance(right, Dict):
             result = Dict({})
             for key, val in self.values.iteritems():
-                result[key] = val
+                result.values[key] = val
             
             for key, val in right.values.iteritems():
-                result[key] = val
+                result.values[key] = val
 
             return result
         raise LogicError("Cannot add that to dict")
@@ -127,7 +127,7 @@ class Boolean(BaseBox):
 
     def __eq__(self, other):
         assert(isinstance(other,Boolean))
-        return (self.boolvalue) == (other.boolvalue)
+        return self.boolvalue == other.boolvalue
 
     def equals(self, right):
         if isinstance(right, Boolean):

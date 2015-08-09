@@ -195,16 +195,16 @@ class InnerDict(BaseBox):
     """
     
     def __init__(self, statements = None):
-        self.statements = {}
+        self.data = {}
         self.values = {}
         if statements:
-            self.statements = statements
+            self.data = statements
 
     def update(self, key, val):
-        self.statements[key] = val
+        self.data[key] = val
     
-    def get_statements(self):
-        return self.statements
+    def get_data(self):
+        return self.data
 
 
 class Dict(BaseBox):
@@ -216,27 +216,14 @@ class Dict(BaseBox):
         return nls
     
     def __init__(self, inner):
-        self.statements = inner.get_statements()
+        self.data = inner.get_data()
         self.values = {}
     
-    def get_statements(self):
-        return self.statements
+    def get_data(self):
+        return self.data
     
     def update(self, key, val):
-        self.statements[key] = statement
-    
-    def index(self, i):
-        if type(i) is Integer:
-            return self.values[i.value]
-        if type(i) is Float:
-            return self.values[int(i.value)]
-        if type(i) is String:
-            return self.values[i.value]
-        raise LogicError("Cannot index with that value")
-    
-    def add(self, right):
-    
-        raise LogicError("Cannot add that to dict")
+        self.data[key] = val
     
     def eval(self, env):
         
@@ -247,7 +234,7 @@ class Dict(BaseBox):
     
     def rep(self):
         result = 'Dict('
-        result += ",".join(self.map(lambda k: "%s: %s" % (k[0].rep(), k[1].rep()),self.statements.iteritems()))
+        result += ",".join(self.map(lambda k: "%s: %s" % (k[0].rep(), k[1].rep()),self.data.iteritems()))
         result += ')'
         return result
     
