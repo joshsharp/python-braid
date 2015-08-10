@@ -86,8 +86,8 @@ def compile_functiondeclaration(context, ast):
     context.emit(bytecode.LOAD_VARIABLE,fn_index)
 
 
-def compile_function(context, ast):
-    assert(isinstance(ast,ast_objects.Function))
+def compile_call(context, ast):
+    assert(isinstance(ast,ast_objects.Call))
     # this is a call really
     
     if type(ast.args) is ast_objects.InnerArray:
@@ -395,7 +395,7 @@ def compile_any(context, ast):
         "assignment":compile_assignment,
         "argument":compile_argument,
         "add":compile_add,
-        "function":compile_function,
+        "call":compile_call,
         "functiondeclaration":compile_functiondeclaration,
         "block":compile_block,
         "or":compile_or,

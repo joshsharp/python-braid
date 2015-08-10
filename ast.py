@@ -61,7 +61,7 @@ class FunctionDeclaration(BaseBox):
         return "<function '%s'>" % self.name
 
 
-class Function(BaseBox):
+class Call(BaseBox):
     
     def __init__(self, name, args):
         self.name = name
@@ -72,7 +72,7 @@ class Function(BaseBox):
         return result
     
     def rep(self):
-        result = 'Function %s (' % self.name
+        result = 'Call %s (' % self.name
         if isinstance(self.args,Array):
             for statement in self.args.get_statements():
                 result += ' ' + statement.rep()
@@ -80,7 +80,7 @@ class Function(BaseBox):
         return result
     
     def to_string(self):
-        return "<function '%s'>" % self.name
+        return "<call '%s'>" % self.name
 
 
 class Block(BaseBox):
