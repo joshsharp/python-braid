@@ -1,6 +1,15 @@
-
+from rpython.rlib.objectmodel import r_dict, compute_hash
 from rply.token import BaseBox
 from errors import *
+
+def dict_eq(key, other):
+    # we need to implement rdict method to find key equality
+    return key._eq(other)
+
+def dict_hash(key):
+    # we need to implement rdict method to find key equality
+    return key._hash()
+
 
 class Null(BaseBox):
     
@@ -99,7 +108,7 @@ class Dict(BaseBox):
     def add(self, right):
     
         if isinstance(right, Dict):
-            result = Dict({})
+            result = Dict(r_dict(dict_eq, dict_hash))
             for key, val in self.values.iteritems():
                 result.values[key] = val
             
@@ -123,11 +132,20 @@ class Boolean(BaseBox):
         return bool(self.boolvalue)
 
     def __hash__(self):
-        return hash(self.boolvalue)
+        return compute_hash(self.boolvalue)
 
     def __eq__(self, other):
-        assert(isinstance(other,Boolean))
-        return self.boolvalue == other.boolvalue
+        if(isinstance(other,Boolean)):
+            return self.boolvalue == other.boolvalue
+        return False
+
+    def _hash(self):
+        return compute_hash(self.boolvalue)
+
+    def _eq(self, other):
+        if(isinstance(other,Boolean)):
+            return self.boolvalue == other.boolvalue
+        return False
 
     def equals(self, right):
         if isinstance(right, Boolean):
@@ -191,11 +209,20 @@ class Integer(BaseBox):
         return int(self.intvalue)
 
     def __hash__(self):
-        return hash(self.intvalue)
+        return compute_hash(self.intvalue)
 
     def __eq__(self, other):
-        assert(isinstance(other,Integer))
-        return (self.intvalue) == (other.intvalue)
+        if(isinstance(other,Integer)):
+            return (self.intvalue) == (other.intvalue)
+        return False
+
+    def _hash(self):
+        return compute_hash(self.intvalue)
+
+    def _eq(self, other):
+        if(isinstance(other,Integer)):
+            return self.intvalue == other.intvalue
+        return False
 
     def to_string(self):
         return str(self.value)
@@ -280,10 +307,19 @@ class Float(BaseBox):
         return float(self.floatvalue)
     
     def __hash__(self):
-        return hash(self.value)
+        return compute_hash(self.value)
 
     def __eq__(self, other):
         return (self.value) == (other.value)
+    
+    
+    def _hash(self):
+        return compute_hash(self.floatvalue)
+
+    def _eq(self, other):
+        if(isinstance(other,Float)):
+            return self.floatvalue == other.floatvalue
+        return False
     
     def to_string(self):
         return str(self.value)
@@ -365,16 +401,25 @@ class Float(BaseBox):
     def dump(self):
         return str(self.value)
 
+
 class String(BaseBox):
     
     def __init__(self, value):
         self.value = str(value)
 
     def __hash__(self):
-        return hash(self.value)
+        return compute_hash(self.value)
 
     def __eq__(self, other):
         return (self.value) == (other.value)
+
+    def _hash(self):
+        return compute_hash(self.value)
+
+    def _eq(self, other):
+        if(isinstance(other,String)):
+            return self.value == other.value
+        return False
 
     def to_string(self):
         return str(self.value)

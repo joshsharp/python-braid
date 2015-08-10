@@ -1,7 +1,7 @@
-import lexer, parser, interpreter, repl, main
+import lexer, parser, interpreter, repl, braid
 
 def entry_point(argv):
-    main.begin(argv[1:])
+    braid.begin(argv[1:])
     return 0
 
 def target(*args):

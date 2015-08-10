@@ -24,9 +24,6 @@ class Interpreter(object):
         
         assert(len(args) == len(byte_code.arguments))
         
-        #for index, value in zip(byte_code.arguments,args):
-        #    byte_code.variables[index] = value
-        
         print "(running %s)" % byte_code.name
         
         # copy args into inner context
@@ -77,7 +74,7 @@ class Interpreter(object):
                 stack.append(objects.Array(values))
             
             elif opcode == bytecode.STORE_DICT:
-                values = {}
+                values = objects.r_dict(objects.dict_eq,objects.dict_hash)
                 for i in xrange(arg):
                     values[stack.pop()] = stack.pop()
                 stack.append(objects.Dict(values))
