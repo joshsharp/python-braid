@@ -85,19 +85,18 @@ class Bytecode(object):
         return 'bytecode'
 
     def dump(self, pretty=True, indent=0):
-        print "CONSTANTS:"
-        for i, v in enumerate(self.constants):
-            print "%s: %s" % (i, v.to_string())
-        
-        print "VARS:"
-        for k, v in self.variables.iteritems():
-            print "%s: %s => %s" % (k, v.name, v.value.__class__.__name__)
-        
-        
-        print "CODE:"
-        
         lines = []
-
+        lines.append("CONSTANTS:")
+        for i, v in enumerate(self.constants):
+            lines.append("%s: %s" % (i, v.to_string()))
+        
+        lines.append("VARS:")
+        for k, v in self.variables.iteritems():
+            lines.append("%s: %s => %s" % (k, v.name, v.value.__class__.__name__))
+        
+        
+        lines.append("CODE:")
+        
         for offset, byte_code, arg in self:
 
             name = reverse[byte_code]

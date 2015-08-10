@@ -3,12 +3,13 @@ import parser, compiler, bytecode, objects, errors
 class Interpreter(object):
 
     def __init__(self):
-        pass
+        self.last_bc = ''
         
     def compile_interpret(self, ast, context=None):
         if not context:
             context = compiler.Context()
         byte_code = compiler.compile(ast, context)
+        self.last_bc = ''
     
         return self.interpret(byte_code)
     
@@ -24,7 +25,7 @@ class Interpreter(object):
         
         assert(len(args) == len(byte_code.arguments))
         
-        print "(running %s)" % byte_code.name
+        #print "(running %s)" % byte_code.name
         
         # copy args into inner context
         for i in xrange(0,len(args)):
@@ -35,7 +36,7 @@ class Interpreter(object):
             byte_code.variables[index] = objects.Variable("arg",args[i])
             
         
-        print byte_code.dump(True)
+        self.last_bc += byte_code.dump(True)
         
         while pc < len(byte_code.instructions):
             

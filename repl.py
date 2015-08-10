@@ -1,4 +1,4 @@
-import parser, compiler, interpreter, errors
+import parser, compiler, interpreter, errors, objects
 import sys, locale, os
 
 
@@ -25,6 +25,7 @@ def loop():
     intr = interpreter.Interpreter()
     context = compiler.Context()
     last = parser.Null()
+    bytecode = ''
     
     opening = 0
     code = ''
@@ -42,6 +43,9 @@ def loop():
             if code.strip(' \t\r\n') == ':a':
                 print last.rep()
                 continue
+            if code.strip(' \t\r\n') == ':b':
+                print bytecode
+                continue
             if code.strip(' \t\r\n') == ':q':
                 os.write(1, "\n")
                 break
@@ -53,6 +57,7 @@ def loop():
                 #env.variables['it'] = result
                 
                 result = intr.compile_interpret(ast, context)
+                bytecode = intr.last_bc
                 printresult(result,"= ")
                 
                 context.instructions = []
