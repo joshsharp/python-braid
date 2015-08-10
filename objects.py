@@ -73,6 +73,14 @@ class Array(BaseBox):
             return result
         raise LogicError("Cannot add that to array")
     
+    def sub(self,right):
+        if isinstance(right,Integer):
+            result = [val for val in self.values]
+                
+            del result[right.intvalue]
+            return Array(result)
+        raise LogicError("Cannot remove that index from array")
+    
     def to_string(self):
         return '[%s]' % (", ".join(self.map(lambda x: x.to_string(),self.values)))
 
@@ -117,6 +125,14 @@ class Dict(BaseBox):
 
             return result
         raise LogicError("Cannot add that to dict")
+    
+    def sub(self,right):
+        result = r_dict(dict_eq, dict_hash)
+        for key, val in self.values.iteritems():
+            result[key] = val
+            
+        del result[right]
+        return Dict(result)
     
     def to_string(self):
         return '{%s}' % (", ".join(self.map(lambda k: "%s: %s" % (k[0].to_string(), k[1].to_string()),self.values.iteritems())))

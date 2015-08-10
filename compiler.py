@@ -139,9 +139,7 @@ def compile_dict(context, ast):
     assert(isinstance(ast,ast_objects.Dict))
     length = len(ast.get_data().keys())
     for key, val in ast.get_data().iteritems():
-        print "add key %s" % key.rep()
         compile_any(context,key)
-        print "add val %s" % val.rep()
         compile_any(context,val)
     context.emit(bytecode.STORE_DICT,length)
 
