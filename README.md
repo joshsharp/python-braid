@@ -22,18 +22,6 @@ Try `python main.py test.txt` to evaluate stuff it can do.
 
 Basic arithmetic, floats, integers, booleans, and strings, variable assignment, if expressions, and a print() function.
 
-~~The result of the last statement is stored in `it`, so you can do:~~ (this is broken)
-
-```
->>> 5 + 5
-= 10
->>> let a = it
-= 10
-print(a)
-= 10
-```
-
-Other stuff:
 
 ```
 >>> 5 == 5
@@ -89,7 +77,7 @@ end
 func p_message(msg, n):
   if n > 0:
     print(msg)
-    p_message(n - 1)
+    p_message(msg, n - 1)
   end
 end
 
