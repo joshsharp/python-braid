@@ -12,9 +12,7 @@ RPly's interface is a bit higher level.
 
 ## Running
 
-`python main.py` for REPL, `python main.py [filename].bd` for interpreting a file
-
-Try `python main.py test.txt` to evaluate stuff it can do.
+`python braid.py` for REPL, `python braid.py [filename].bd` for interpreting a file
 
 `:a` gives you the AST of the last statement, `:e` to list environment variables, `:q` or Ctrl-C to quit. The REPL now supports multi-line input too — it'll just keep appending code and trying to interpret it until it's valid (eg. you closed the block or whatever), or you break it ;)
 
