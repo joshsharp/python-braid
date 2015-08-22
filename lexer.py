@@ -11,7 +11,7 @@ lg = LexerGenerator()
 lg.add('FLOAT', '-?\d+\.\d+')
 lg.add('INTEGER', '-?\d+')
 lg.add('STRING', '(""".*?""")|(".*?")|(\'.*?\')')
-lg.add('PRINT', 'print(?!\w)') # put this before variable which would otherwise match
+#lg.add('PRINT', 'print(?!\w)') # put this before variable which would otherwise match
 lg.add('BOOLEAN', "true(?!\w)|false(?!\w)")
 lg.add('IF', 'if(?!\w)')
 lg.add('ELSE', 'else(?!\w)')

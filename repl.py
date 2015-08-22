@@ -10,10 +10,11 @@ def readline(prompt=None):
     res = ''
     while True:
         buf = os.read(0, 16)
-        if not buf: return res
+        if not buf:
+            return res
         res += buf
-        if res[-1] == '\n': return res[:-1]
-
+        if res[-1] == '\n':
+            return res[:-1]
 
 def printresult(result, prefix):
     #print type(result)
@@ -21,9 +22,10 @@ def printresult(result, prefix):
         print "%s %s" % (prefix, result.to_string())
     else:
         print prefix
+
 def loop():
     intr = interpreter.Interpreter()
-    context = compiler.Context()
+    #context = compiler.Context()
     last = parser.Null()
     bytecode = ''
     
@@ -56,11 +58,11 @@ def loop():
                 #result = ast.eval(env)
                 #env.variables['it'] = result
                 
-                result = intr.compile_interpret(ast, context)
+                result = intr.compile_interpret(ast)
                 bytecode = intr.last_bc
                 printresult(result,"= ")
                 
-                context.instructions = []
+                #context.instructions = []
                 opening = 0
             
             except parser.UnexpectedEndError as e:

@@ -39,6 +39,23 @@ class Function(BaseBox):
         raise Exception("Cannot add that to function %s" % self.name)
     
 
+class ExternalFunction(BaseBox):
+    
+    def __init__(self, name, fn, args):
+        self.name = name
+        self.fn = fn
+        self.args = args
+        
+    def to_string(self):
+        return "<function %s>" % self.name
+
+    def dump(self):
+        return "<function %s>" % self.name
+
+    def add(self, right):
+        raise Exception("Cannot add that to function %s" % self.name)
+    
+
 class Array(BaseBox):
     
     def __init__(self, args):

@@ -13,7 +13,7 @@ class ParserState(object):
 
 pg = ParserGenerator(
     # A list of all token names, accepted by the parser.
-    ['PRINT', 'STRING', 'INTEGER', 'FLOAT', 'IDENTIFIER', 'BOOLEAN',
+    ['STRING', 'INTEGER', 'FLOAT', 'IDENTIFIER', 'BOOLEAN',
      'PLUS', 'MINUS', 'MUL', 'DIV',
      'IF', 'ELSE', 'COLON', 'END', 'AND', 'OR', 'NOT', 'LET','WHILE',
      '(', ')', '=', '==', '!=', '>=', '<=', '<', '>', '[', ']', ',',
@@ -81,10 +81,6 @@ def statement_full(state, p):
 @pg.production('statement : expression')
 def statement_expr(state, p):
     return p[0]
-
-@pg.production('statement : PRINT ( expression )')
-def statement_print(state, p):    
-    return Print(p[2])
 
 @pg.production('statement : LET IDENTIFIER = expression')
 def statement_assignment(state, p):

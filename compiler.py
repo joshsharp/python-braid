@@ -28,10 +28,10 @@ class Context(object):
         self.constants.append(constant)
         return index
 
-    def register_function(self, function):
-        index = len(self.functions)
-        self.functions[index] = function
-        return index
+    #def register_function(self, function):
+    #    index = len(self.functions)
+    #    self.functions[index] = function
+    #    return index
     
     def build(self, arguments=[], name="<input>"):
         
@@ -270,6 +270,13 @@ def compile_equal(context, ast):
     context.emit(bytecode.BINARY_EQ,bytecode.NO_ARG)
 
 
+def compile_equal(context, ast):
+    assert(isinstance(ast,ast_objects.Equal))
+    compile_any(context, ast.left)
+    compile_any(context, ast.right)
+    context.emit(bytecode.BINARY_EQ,bytecode.NO_ARG)
+
+
 def compile_notequal(context, ast):
     assert(isinstance(ast,ast_objects.NotEqual))
     compile_any(context, ast.left)
@@ -401,7 +408,7 @@ def compile_any(context, ast):
         "or":compile_or,
         "and":compile_and,
         "not":compile_not,
-        "print":compile_print,
+        #"print":compile_print,
         "string":compile_string,
         "integer":compile_integer,
         "float":compile_float,
@@ -420,6 +427,7 @@ def compile_any(context, ast):
         "lessthan":compile_lessthan,
         "lessthanequal":compile_lessthanequal,
         "equal":compile_equal,
+        "notequal":compile_notequal,
     }
     
     func = funcs.get(typename,None)

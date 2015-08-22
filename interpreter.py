@@ -1,13 +1,23 @@
-import parser, compiler, bytecode, objects, errors
+import parser, compiler, bytecode, objects, errors, prelude
 
 class Interpreter(object):
 
     def __init__(self):
         self.last_bc = ''
+        self.context = compiler.Context()
+        self.import_prelude()
+    
+    def import_prelude(self):
+        index = self.context.register_variable("print")
+        self.context.variables[index] = objects.Variable("print",objects.ExternalFunction("print",prelude.print_fn,1))
+        
+        index = self.context.register_variable("readline")
+        self.context.variables[index] = objects.Variable("readline",objects.ExternalFunction("readline",prelude.readline,1))
+        
         
     def compile_interpret(self, ast, context=None):
         if not context:
-            context = compiler.Context()
+            context = self.context
         byte_code = compiler.compile(ast, context)
         self.last_bc = ''
     
@@ -115,6 +125,13 @@ class Interpreter(object):
                 result = left.div(right)
                 stack.append(result)
             
+            elif opcode == bytecode.BINARY_NEQ:
+                right = stack.pop()
+                left = stack.pop()
+                result = left.equals(right)
+                result.boolvalue = not result.boolvalue
+                stack.append(result)
+            
             elif opcode == bytecode.BINARY_EQ:
                 right = stack.pop()
                 left = stack.pop()
@@ -185,6 +202,15 @@ class Interpreter(object):
                     for i in range(0,len(func.arguments)):
                         args.append(stack.pop())
                     stack.append(self.interpret(func,args))
+                elif isinstance(val, objects.ExternalFunction):
+                    # call
+                    func = val.fn
+                    arglen = val.args
+                    args = []
+                    for i in range(0,arglen):
+                        args.append(stack.pop())
+                    result = func(args)
+                    stack.append(result)
                 else:
                     raise Exception("Not a function")
         return stack[len(stack) - 1]
