@@ -12,9 +12,7 @@ RPly's interface is a bit higher level.
 
 ## Running
 
-`python main.py` for REPL, `python main.py [filename].bd` for interpreting a file
-
-Try `python main.py test.txt` to evaluate stuff it can do.
+`python braid.py` for REPL, `python braid.py [filename].bd` for interpreting a file
 
 `:a` gives you the AST of the last statement, `:e` to list environment variables, `:q` or Ctrl-C to quit. The REPL now supports multi-line input too — it'll just keep appending code and trying to interpret it until it's valid (eg. you closed the block or whatever), or you break it ;)
 
@@ -22,18 +20,6 @@ Try `python main.py test.txt` to evaluate stuff it can do.
 
 Basic arithmetic, floats, integers, booleans, and strings, variable assignment, if expressions, and a print() function.
 
-~~The result of the last statement is stored in `it`, so you can do:~~ (this is broken)
-
-```
->>> 5 + 5
-= 10
->>> let a = it
-= 10
-print(a)
-= 10
-```
-
-Other stuff:
 
 ```
 >>> 5 == 5
@@ -89,7 +75,7 @@ end
 func p_message(msg, n):
   if n > 0:
     print(msg)
-    p_message(n - 1)
+    p_message(msg, n - 1)
   end
 end
 
