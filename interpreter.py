@@ -42,7 +42,7 @@ class Interpreter(object):
             # TODO: this doesn't make sense, indexes change I think?
             # Make sure these aren't getting overwritten
             index = byte_code.arguments[i]
-            print "(arg %s going into %s)" % (args[i].dump(),index)
+            #print "(arg %s going into %s)" % (args[i].dump(),index)
             byte_code.variables[index] = objects.Variable("arg",args[i])
             
         
