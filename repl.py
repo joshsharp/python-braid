@@ -62,7 +62,7 @@ def loop():
                 bytecode = intr.last_bc
                 printresult(result,"= ")
                 
-                #context.instructions = []
+                intr.context.instructions = []
                 opening = 0
             
             except parser.UnexpectedEndError as e:
