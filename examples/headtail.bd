@@ -1,0 +1,16 @@
+func head(arr):
+  arr[0]
+end
+
+func tail(arr):
+  let arr2 = arr
+  arr2 - 0
+end
+
+let a = [0,1,2,3]
+print(head(a))
+print(tail(a))
+print(tail(tail(a)))
+print("done")
+
+

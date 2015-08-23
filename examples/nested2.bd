@@ -1,0 +1,12 @@
+print("load")
+
+func make_adder(amount):
+  func adder(i):
+    let con = amount
+    con + i
+  end
+end
+
+print("begin")
+let ad = make_adder(5)
+ad(1) # doesn't

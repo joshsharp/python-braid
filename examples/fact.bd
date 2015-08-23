@@ -1,0 +1,10 @@
+func fact(a):
+  if a == 1:
+    1
+  else:
+    a + fact(a - 1)
+  end
+end
+
+fact(900)
+

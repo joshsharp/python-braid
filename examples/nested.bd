@@ -1,0 +1,13 @@
+func f():
+  let a = 5
+  func boo():
+    print("hi!")
+    print(a)
+  end
+  print("run inner")
+  boo()
+end
+
+f() # this works
+
+

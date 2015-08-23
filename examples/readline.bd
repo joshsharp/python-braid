@@ -1,0 +1,7 @@
+let a = readline("What is your name? ")
+if a == "":
+  print("Boo that's no help")
+else:
+  print(a + ", that's a nice name :)")
+
+end
