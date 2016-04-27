@@ -6,6 +6,8 @@ I don't really know what I'm doing but I'm interested in writing a toy language 
 I've chosen RPython and RPly because I know Python quite well and the RPython EBNF parsing libs were confusing. 
 RPly's interface is a bit higher level.
 
+*This project is no longer being actively maintained.*
+
 ## Installing
 
 `pip install -r requirements.txt`
