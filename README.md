@@ -123,4 +123,4 @@ A language which can do things I find interesting, and the tools necessary to ex
 
 ## Status updates
 
-Obviously you can read the commits but I'm also documenting my progress [on Littlelogs](http://littlelogs.co/josh/), or more specifically [posts tagged with #interpreter](http://littlelogs.co/josh/tag/interpreter/)
+I've abandoned this as I'm no longer interested in building a language on RPython. You can follow me on twitter at [@joshsharp](https://twitter.com/joshsharp) if you're interested in the other stuff I'm working on.
